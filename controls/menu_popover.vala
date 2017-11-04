@@ -53,11 +53,15 @@ public class KotoMenuPopover : Gtk.Popover {
 		view_buttons_box.set_spacing(0); // Have some spacing between the buttons
 		view_buttons_box.add(show_cover_button); // Add Cover Button
 		view_buttons_box.add(show_list_button); // Add List Button
+		view_buttons_box.margin_bottom = 5;
 
 		items.pack_start(view_buttons_box, false, true, 0); // Add View Buttons box to items
 
-		show_extras_button = new KotoMenuItem(_("Extras")); // Extras Button
+		show_extras_button = new KotoMenuItem(_("Extras"), "", "right"); // Extras Button
+		show_extras_button.margin_bottom = 5;
+
 		show_settings_button = new KotoMenuItem(_("Settings")); // Settings Button
+
 		items.add(show_extras_button);
 		items.add(show_settings_button);
 
