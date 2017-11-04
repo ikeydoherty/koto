@@ -20,19 +20,14 @@ public class Koto : Gtk.Window {
 		set_default_size(800,600); // Set a default of 800px width by 600 height
 		title = "Koto";
 
-		header = new KotoHeaderBar();
-		menu_popover = new KotoMenuPopover(header.menu_button);
+		header = new KotoHeaderBar(this);
+		menu_popover = new KotoMenuPopover();
 		container = new Gtk.Box(Gtk.Orientation.VERTICAL, 0);
 		views = create_views(); // Create our views
 		container.pack_start(views, true, true, 0);
 
 		set_titlebar(header);
 		add(container);
-
-		header.menu_button.clicked.connect(() => { // On button click
-			menu_popover.popdown(); // Show the Popover, have it appear from the top
-			menu_popover.show();
-		});
 
 		destroy.connect(method_destroy);
 		show_all();

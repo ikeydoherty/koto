@@ -13,8 +13,8 @@ public class KotoMenuPopover : Gtk.Popover {
 	protected Gtk.Button show_extras_button;
 	protected KotoMenuItem back_from_extras_button;
 
-	public KotoMenuPopover(Gtk.Widget? parent_widget) {
-		Object(relative_to: parent_widget);
+	public KotoMenuPopover() {
+		Object();
 		set_size_request(180, 280); // Default to 200px width by 300 height (after accounting for inner Stack margin)
 
 		popover_stack = new Gtk.Stack();
