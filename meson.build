@@ -7,14 +7,18 @@ gtk_dep = dependency('gtk+-3.0', version: '>=3.22.0')
 
 add_project_arguments(['--vapidir', join_paths(meson.current_source_dir(), 'vapi')], language: 'vala')
 
+cdata = configuration_data()
+cdata.set_quoted('GETTEXT_PACKAGE', 'koto')
+add_global_arguments('-DGETTEXT_PACKAGE="koto"', language: 'c')
+
 files = files(
 	'controls/headerbar.vala',
 	'controls/menu_popover.vala',
 	'views/view_cover.vala',
-	'views/view_list.vala'
+	'views/view_list.vala',
+	'koto.vala',
+	'utils.vala'
 )
-
-files += 'koto.vala'
 
 executable(
 	'koto',
