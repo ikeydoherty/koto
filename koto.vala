@@ -55,7 +55,7 @@ public class Koto : Gtk.Window {
 
 		destroy.connect(method_destroy);
 		show_all();
-		kotoio.get_directory_content(kotoio.music_dir, "directory", true);
+		kotoio.get_directory_content(kotoio.music_dir, "file", true);
 	}
 
 	// create_views is responsible for the creation of our Gtk.Stack

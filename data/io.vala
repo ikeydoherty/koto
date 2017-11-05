@@ -28,20 +28,22 @@ public class KotoFileIO : Object {
 				string file_full_path = complete_dir + inner_music_file.get_name();
 
 				if (!inner_music_file.get_is_hidden()) { // If this is not a hidden file
-					if ((type == "directory") && ((file_type == GLib.FileType.DIRECTORY) || (file_type == GLib.FileType.SYMBOLIC_LINK))) { // If we're looking for a directory, and this is a directory or a symlink (possibly a directory)
-						stdout.printf("%s\n", file_full_path);
-						if (recursive) { // If we should do recursion
-							var dir_content = get_directory_content(file_full_path, "directory", recursive);
-							contents.append_vals(dir_content, dir_content.length);
-						} else {
-							contents.append_val(complete_dir + inner_music_file.get_display_name()); // Add the file name
+					if ((file_type == GLib.FileType.DIRECTORY) || (file_type == GLib.FileType.SYMBOLIC_LINK)) { // If this is a directory or a symlink (possibly a directory)
+						if (type == "directory") {
+							contents.append_val(complete_dir + inner_music_file.get_display_name()); // Add the path
 						}
-					} else if ((type == "file") && (file_type == GLib.FileType.REGULAR)) { // If we're looking for a file and this is one
+						stdout.printf("%s\n", file_full_path);
+
+						if (recursive) { // If we should do recursion
+							var dir_content = get_directory_content(file_full_path, type, recursive);
+							contents.append_vals(dir_content, dir_content.length);
+						}
+					} else if (file_type == GLib.FileType.REGULAR) { // If we're looking for a file and this is one
 						string content_type = inner_music_file.get_content_type(); // Get the content type so we can do some basic content type checking
 
-						if (content_type.has_prefix("audio/") || (content_type == "video/x-vorbis+ogg")) { // If this has an audio mimetype or may be playable (some ogg reports as video/)
+						if ((type == "file") && (content_type.has_prefix("audio/") || (content_type.has_suffix("+ogg")))) { // If this has an audio mimetype or may be playable (some ogg reports as video/)
 							contents.append_val(file_full_path);
-							stdout.printf("%s", complete_dir + inner_music_file.get_display_name());
+							stdout.printf("%s\n", complete_dir + inner_music_file.get_display_name());
 						}
 					}
 				}
