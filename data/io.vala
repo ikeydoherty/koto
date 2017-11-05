@@ -72,32 +72,40 @@ public class KotoFileIO : Object {
 		string album = _("Unknown");
 		string title;
 		int length = 0;
+		int track = 0;
 
 		if (file != null && file.tag != null) { // If we successfully retrieved id3 information
 			artist = (file.tag.artist != "") ? file.tag.artist : _("Unknown");
 			album = (file.tag.album != "") ? file.tag.album : _("Unknown");
 			title = (file.tag.title != "") ? file.tag.title : _("Unknown");
 			length = (file.audioproperties != null) ? file.audioproperties.length : 0;
+			track = int.parse(file.tag.track.to_string("%d"));
 		} else { // If we failed to fetch id3 information
 			title = fileinfo.get_edit_name(); // At least treat the title as the display name
+			int last_index_of_dot = title.last_index_of("."); // Get the last index
+			title = title.substring(0, last_index_of_dot);
 
 			if (title.index_of(" - ") != -1) { // If there might be some form of Artist - Song Name
 				var splitName = title.split(" - ", 2);
+				var potential_artist = splitName[0].strip();
 				title = splitName[1];
 
-				if (splitName[0].strip().length > 2) { // If the artist string is not likely to just be numbers
-					artist = splitName[0].strip();
+				if (potential_artist.length > 2) { // If the artist string is not likely to just be numbers
+					artist = potential_artist;
 
 					try {
-						Regex regex = new Regex("^([0-9]+)\\s");
-						artist = regex.replace(artist, artist.length, 0, "").strip();
+						Regex regex = new Regex("^([0-9]+)\\s"); // Attempt a regex where we strip out any prefixed numbers
+						artist = regex.replace(artist, artist.length, 0, "").strip(); // Replace the prefixed numbers and trim whitespace
+						track = int.parse(potential_artist.replace(artist, "").strip()); // Do the inverse, strip out the likely artist so we get the numbers, and trim
 					} catch (RegexError err) {
 						stdout.printf("%s", err.message);
 					}
+				} else { // If the artist string is likely to just be numbers
+					track = int.parse(potential_artist); // Parse as an int and set to track
 				}
 			}
 		}
 
-		stdout.printf("Artist:%s\nAlbum:%s\nTitle:%s\n", artist, album, title);
+		stdout.printf("Artist:%s\nAlbum:%s\nTitle:%s\nTrack:%d\n", artist, album, title, track);
 	}
 }
