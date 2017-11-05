@@ -55,6 +55,7 @@ public class Koto : Gtk.Window {
 
 		destroy.connect(method_destroy);
 		show_all();
+
 		kotoio.get_directory_content(kotoio.music_dir, "file", true);
 	}
 

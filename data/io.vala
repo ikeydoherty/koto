@@ -8,6 +8,7 @@ public class KotoFileIO : Object {
 		music_dir = GLib.Environment.get_user_special_dir(GLib.UserDirectory.MUSIC); // Get the user's Music directory, using XDG special user directories
 	}
 
+	// get_directory_content will get a list of content (directories or files)
 	public Array<string> get_directory_content(string dir, string type, bool? recursive = false) {
 		var complete_dir = dir;
 
@@ -32,18 +33,24 @@ public class KotoFileIO : Object {
 						if (type == "directory") {
 							contents.append_val(complete_dir + inner_music_file.get_display_name()); // Add the path
 						}
-						stdout.printf("%s\n", file_full_path);
 
 						if (recursive) { // If we should do recursion
 							var dir_content = get_directory_content(file_full_path, type, recursive);
-							contents.append_vals(dir_content, dir_content.length);
+
+							if (dir_content.length != 0) { // If there is content to append
+								contents.append_vals(dir_content, dir_content.length);
+							}
 						}
 					} else if (file_type == GLib.FileType.REGULAR) { // If we're looking for a file and this is one
 						string content_type = inner_music_file.get_content_type(); // Get the content type so we can do some basic content type checking
 
 						if ((type == "file") && (content_type.has_prefix("audio/") || (content_type.has_suffix("+ogg")))) { // If this has an audio mimetype or may be playable (some ogg reports as video/)
+							if (inner_music_file.get_is_symlink()) { // If this is a symlink
+								file_full_path = inner_music_file.get_symlink_target(); // Get the symlink target
+							}
+
 							contents.append_val(file_full_path);
-							stdout.printf("%s\n", complete_dir + inner_music_file.get_display_name());
+							get_metadata(file_full_path);
 						}
 					}
 				}
@@ -57,6 +64,15 @@ public class KotoFileIO : Object {
 		} catch (Error e) {
 			stdout.printf(e.message);
 			return contents;
+		}
+	}
+
+	public void get_metadata(string filepath) {
+		TagLib.ID3v2.set_default_text_encoding (TagLib.ID3v2.Encoding.UTF8);
+		TagLib.File file = new TagLib.File(filepath);
+
+		if (file != null && file.tag != null) {
+			stdout.printf("Artist:%s\nAlbum:%s\nTitle:%s\n", file.tag.artist, file.tag.album, file.tag.title);
 		}
 	}
 }
