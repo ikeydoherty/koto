@@ -1,4 +1,5 @@
 public class Koto : Gtk.Window {
+	public KotoFileIO kotoio;
 	public KotoHeaderBar header;
 	public KotoMenuPopover menu_popover;
 	public KotoPlayerBar playerbar;
@@ -26,8 +27,10 @@ public class Koto : Gtk.Window {
 			window_position: Gtk.WindowPosition.CENTER
 		);
 
+		kotoio = new KotoFileIO();
+
 		// Create our basic GTK Application
-		set_default_size(800,600); // Set a default of 800px width by 600 height
+		set_default_size(1000,600); // Set a default of 800px width by 600 height
 		title = "Koto";
 		current_view = "library"; // Default to library global view
 		current_library_view = "list"; // Default to list view until we implement preferences
@@ -52,6 +55,7 @@ public class Koto : Gtk.Window {
 
 		destroy.connect(method_destroy);
 		show_all();
+		kotoio.get_directory_content(kotoio.music_dir, "directory", true);
 	}
 
 	// create_views is responsible for the creation of our Gtk.Stack

@@ -18,6 +18,7 @@ files = files(
 	'controls/menu_popover.vala',
 	'controls/playerbar.vala',
 	'controls/views_list.vala',
+	'data/io.vala',
 	'views/view_devices.vala',
 	'views/view_library_grid.vala',
 	'views/view_library_list.vala',
