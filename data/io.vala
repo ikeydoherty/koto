@@ -6,6 +6,7 @@ public class KotoFileIO : Object {
 
 	public KotoFileIO() {
 		music_dir = GLib.Environment.get_user_special_dir(GLib.UserDirectory.MUSIC); // Get the user's Music directory, using XDG special user directories
+		TagLib.ID3v2.set_default_text_encoding (TagLib.ID3v2.Encoding.UTF8);
 	}
 
 	// get_directory_content will get a list of content (directories or files)
@@ -45,12 +46,10 @@ public class KotoFileIO : Object {
 						string content_type = inner_music_file.get_content_type(); // Get the content type so we can do some basic content type checking
 
 						if ((type == "file") && (content_type.has_prefix("audio/") || (content_type.has_suffix("+ogg")))) { // If this has an audio mimetype or may be playable (some ogg reports as video/)
-							if (inner_music_file.get_is_symlink()) { // If this is a symlink
-								file_full_path = inner_music_file.get_symlink_target(); // Get the symlink target
-							}
+							file_full_path = inner_music_file.get_is_symlink() ? inner_music_file.get_symlink_target() : file_full_path;
 
 							contents.append_val(file_full_path);
-							get_metadata(file_full_path);
+							get_metadata(inner_music_file, file_full_path);
 						}
 					}
 				}
@@ -67,12 +66,38 @@ public class KotoFileIO : Object {
 		}
 	}
 
-	public void get_metadata(string filepath) {
-		TagLib.ID3v2.set_default_text_encoding (TagLib.ID3v2.Encoding.UTF8);
+	public void get_metadata(GLib.FileInfo fileinfo, string filepath) {
 		TagLib.File file = new TagLib.File(filepath);
+		string artist = _("Unknown");
+		string album = _("Unknown");
+		string title;
+		int length = 0;
 
-		if (file != null && file.tag != null) {
-			stdout.printf("Artist:%s\nAlbum:%s\nTitle:%s\n", file.tag.artist, file.tag.album, file.tag.title);
+		if (file != null && file.tag != null) { // If we successfully retrieved id3 information
+			artist = (file.tag.artist != "") ? file.tag.artist : _("Unknown");
+			album = (file.tag.album != "") ? file.tag.album : _("Unknown");
+			title = (file.tag.title != "") ? file.tag.title : _("Unknown");
+			length = (file.audioproperties != null) ? file.audioproperties.length : 0;
+		} else { // If we failed to fetch id3 information
+			title = fileinfo.get_edit_name(); // At least treat the title as the display name
+
+			if (title.index_of(" - ") != -1) { // If there might be some form of Artist - Song Name
+				var splitName = title.split(" - ", 2);
+				title = splitName[1];
+
+				if (splitName[0].strip().length > 2) { // If the artist string is not likely to just be numbers
+					artist = splitName[0].strip();
+
+					try {
+						Regex regex = new Regex("^([0-9]+)\\s");
+						artist = regex.replace(artist, artist.length, 0, "").strip();
+					} catch (RegexError err) {
+						stdout.printf("%s", err.message);
+					}
+				}
+			}
 		}
+
+		stdout.printf("Artist:%s\nAlbum:%s\nTitle:%s\n", artist, album, title);
 	}
 }
