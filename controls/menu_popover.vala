@@ -5,9 +5,7 @@ public class KotoMenuPopover : Gtk.Popover {
 	public Gtk.Stack popover_stack;
 
 	// Buttons
-	public Gtk.Button show_cover_button;
-	public Gtk.Button show_list_button;
-	public Gtk.Button show_settings_button;
+	public Gtk.Button show_preferences_button;
 	public KotoMenuItem update_music_button;
 
 	protected Gtk.Button show_extras_button;
@@ -15,11 +13,12 @@ public class KotoMenuPopover : Gtk.Popover {
 
 	public KotoMenuPopover() {
 		Object();
-		set_size_request(180, 280); // Default to 200px width by 300 height (after accounting for inner Stack margin)
 
 		popover_stack = new Gtk.Stack();
 		popover_stack.set_transition_duration(250); // 250ms
 		popover_stack.set_transition_type(Gtk.StackTransitionType.SLIDE_LEFT_RIGHT); // Slide to the left or right
+		popover_stack.margin_top = 10;
+		popover_stack.margin_bottom = 10;
 
 		var main_stack = create_main_stack(); // Create our main items stack
 		var extras_stack = create_extras_stack(); // Create our extras items stack
@@ -39,31 +38,18 @@ public class KotoMenuPopover : Gtk.Popover {
 	// create_main_stack will create our main stack consisting of the majority of popover functionality
 	Gtk.Box create_main_stack() {
 		var stack = new Gtk.Box(Gtk.Orientation.HORIZONTAL, 0);
-		stack.margin = 10;
 
 		var items = new Gtk.Box(Gtk.Orientation.VERTICAL, 0);
 		items.expand = true;
 		items.get_style_context().add_class("flat");
 
-		show_list_button = new Gtk.Button.from_icon_name("view-list-symbolic", Gtk.IconSize.MENU);
-		show_cover_button = new Gtk.Button.from_icon_name("view-grid-symbolic", Gtk.IconSize.MENU);
-
-		var view_buttons_box = new Gtk.ButtonBox(Gtk.Orientation.HORIZONTAL);
-		view_buttons_box.set_layout(Gtk.ButtonBoxStyle.EXPAND); // Have the buttons expand
-		view_buttons_box.set_spacing(0); // Have some spacing between the buttons
-		view_buttons_box.add(show_list_button); // Add List Button
-		view_buttons_box.add(show_cover_button); // Add Cover Button
-		view_buttons_box.margin_bottom = 5;
-
-		items.pack_start(view_buttons_box, false, true, 0); // Add View Buttons box to items
-
 		show_extras_button = new KotoMenuItem(_("Extras"), "", "right"); // Extras Button
 		show_extras_button.margin_bottom = 5;
 
-		show_settings_button = new KotoMenuItem(_("Settings")); // Settings Button
+		show_preferences_button = new KotoMenuItem(_("Preferences")); // Preferences Button
 
 		items.add(show_extras_button);
-		items.add(show_settings_button);
+		items.add(show_preferences_button);
 
 		show_extras_button.clicked.connect(() => { // On connect, go to our extras stack
 			this.popover_stack.set_visible_child_name("extras");
@@ -77,15 +63,15 @@ public class KotoMenuPopover : Gtk.Popover {
 	Gtk.Box create_extras_stack() {
 		var stack = new Gtk.Box(Gtk.Orientation.HORIZONTAL, 0);
 
-		var items = new Gtk.Box(Gtk.Orientation.VERTICAL, 10);
+		var items = new Gtk.Box(Gtk.Orientation.VERTICAL, 0);
 		items.expand = true;
 		items.get_style_context().add_class("flat");
 
 		back_from_extras_button = new KotoMenuItem(_("Back"), "go-previous-symbolic");
-		back_from_extras_button.margin_top = 10;
 		items.add(back_from_extras_button);
 
 		var separator = new Gtk.Separator(Gtk.Orientation.HORIZONTAL); // Create a separator to put between our back button and the rest of the items
+		separator.margin_bottom = 5;
 		items.add(separator);
 
 		update_music_button = new KotoMenuItem(_("Update Library"), "view-refresh-symbolic");

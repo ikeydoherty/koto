@@ -15,7 +15,7 @@ files = files(
 	'controls/headerbar.vala',
 	'controls/menu_popover.vala',
 	'controls/playerbar.vala',
-	'views/view_cover.vala',
+	'views/view_grid.vala',
 	'views/view_list.vala',
 	'koto.vala',
 	'utils.vala'

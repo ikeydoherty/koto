@@ -6,6 +6,8 @@ public class Koto : Gtk.Window {
 	public Gtk.Box container;
 	public Gtk.Stack views;
 
+	public string current_view;
+
 	public static int main (string[] args) {
 		Gtk.init(ref args);
 		Koto koto = new Koto();
@@ -20,6 +22,7 @@ public class Koto : Gtk.Window {
 		// Create our basic GTK Application
 		set_default_size(800,600); // Set a default of 800px width by 600 height
 		title = "Koto";
+		current_view = "list"; // Default to list view until we implement preferences
 
 		header = new KotoHeaderBar(this); // Create our Headerbar
 		menu_popover = new KotoMenuPopover(); // Create our Menu Popover
@@ -41,15 +44,21 @@ public class Koto : Gtk.Window {
 	Gtk.Stack create_views() {
 		Gtk.Stack stack =  new Gtk.Stack();
 		var list_view = new KotoListView();
-		var cover_view = new KotoCoverView();
+		var grid_view = new KotoGridView();
 
 		stack.set_transition_duration(250); // 250ms
 		stack.set_transition_type(Gtk.StackTransitionType.OVER_LEFT_RIGHT);
 		stack.add_named(list_view, "list");
-		stack.add_named(cover_view, "cover");
-		stack.set_visible_child_name("list");
+		stack.add_named(grid_view, "grid");
+		stack.set_visible_child_name(current_view);
 
 		return stack;
+	}
+
+	// Toggle View is responsible for toggling our current view
+	public void toggle_view() {
+		current_view = (current_view == "list") ? "grid" : "list"; // Change List to Grid and vise-versa
+		views.set_visible_child_name(current_view);
 	}
 
 	// method_destroy will handle our destroy method

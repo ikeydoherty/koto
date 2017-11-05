@@ -51,7 +51,7 @@ public class KotoPlayerBar : Gtk.Box {
 		var middle_controls = new Gtk.Box(Gtk.Orientation.HORIZONTAL, 0); // Create our Middle Controls section
 		middle_controls.pack_start(progressbar, true, true, 0); // Add our progressbar as the center width
 
-		var right_controls = new Gtk.Box(Gtk.Orientation.HORIZONTAL, 0); // Create our Right Controls section
+		var right_controls = new Gtk.Box(Gtk.Orientation.HORIZONTAL, 10); // Create our Right Controls section
 		right_controls.margin_left = 10;
 		right_controls.margin_right = 10;
 
