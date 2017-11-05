@@ -14,6 +14,7 @@ add_global_arguments('-DGETTEXT_PACKAGE="koto"', language: 'c')
 files = files(
 	'controls/headerbar.vala',
 	'controls/menu_popover.vala',
+	'controls/playerbar.vala',
 	'views/view_cover.vala',
 	'views/view_list.vala',
 	'koto.vala',

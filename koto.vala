@@ -1,6 +1,7 @@
 public class Koto : Gtk.Window {
 	public KotoHeaderBar header;
 	public KotoMenuPopover menu_popover;
+	public KotoPlayerBar playerbar;
 
 	public Gtk.Box container;
 	public Gtk.Stack views;
@@ -20,11 +21,14 @@ public class Koto : Gtk.Window {
 		set_default_size(800,600); // Set a default of 800px width by 600 height
 		title = "Koto";
 
-		header = new KotoHeaderBar(this);
-		menu_popover = new KotoMenuPopover();
+		header = new KotoHeaderBar(this); // Create our Headerbar
+		menu_popover = new KotoMenuPopover(); // Create our Menu Popover
+		playerbar = new KotoPlayerBar(); // Create our Playerbar
+
 		container = new Gtk.Box(Gtk.Orientation.VERTICAL, 0);
 		views = create_views(); // Create our views
 		container.pack_start(views, true, true, 0);
+		container.pack_start(playerbar, false, false, 0);
 
 		set_titlebar(header);
 		add(container);

@@ -1,5 +1,16 @@
 // This file contains various utilities
 
+// KotoFlatIconButton is our custom flat icon Button
+public class KotoFlatIconButton : Gtk.Button {
+	public KotoFlatIconButton(string icon, Gtk.IconSize size) {
+		var image = new Gtk.Image.from_icon_name(icon, size);
+		Object(image: image);
+		get_style_context().add_class("flat");
+		get_style_context().add_class("image-button");
+		set_relief(Gtk.ReliefStyle.NONE);
+	}
+}
+
 // KotoMenuItem is our custom Menu Item
 public class KotoMenuItem : Gtk.Button {
 	public KotoMenuItem(string text, string? icon = "", string? arrow = "") {
