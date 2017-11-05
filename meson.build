@@ -12,13 +12,16 @@ cdata.set_quoted('GETTEXT_PACKAGE', 'koto')
 add_global_arguments('-DGETTEXT_PACKAGE="koto"', language: 'c')
 
 files = files(
+	'controls/flat_icon_button.vala',
 	'controls/headerbar.vala',
+	'controls/menu_item.vala',
 	'controls/menu_popover.vala',
 	'controls/playerbar.vala',
-	'views/view_grid.vala',
-	'views/view_list.vala',
+	'controls/views_list.vala',
+	'views/view_devices.vala',
+	'views/view_library_grid.vala',
+	'views/view_library_list.vala',
 	'koto.vala',
-	'utils.vala'
 )
 
 executable(
