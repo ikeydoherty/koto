@@ -17,7 +17,13 @@ public class Koto : Gtk.Window {
 	}
 
 	public Koto() {
-		Object(type: Gtk.WindowType.TOPLEVEL, window_position: Gtk.WindowPosition.CENTER);
+		Object(
+			icon_name: "audio-headphones",
+			startup_id: "koto",
+			title: "Koto",
+			type: Gtk.WindowType.TOPLEVEL,
+			window_position: Gtk.WindowPosition.CENTER
+		);
 
 		// Create our basic GTK Application
 		set_default_size(800,600); // Set a default of 800px width by 600 height
