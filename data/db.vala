@@ -2,10 +2,11 @@
 
 public class KotoDatabase : Object {
 	public Sqlite.Database db; // Our Sqlite3 Database
+	public bool allow_writes;
+	public bool is_first_run;
 	private string location;
 	private string version_s;
 	private double version;
-	public bool allow_writes;
 
 	public KotoDatabase() {
 		version_s = "0.1";
@@ -17,6 +18,7 @@ public class KotoDatabase : Object {
 
 		if (open_err != Sqlite.OK) { // If we failed to open database
 			stderr.printf("%s\n", get_failure_string(open_err));
+			is_first_run = true;
 			allow_writes = create_new_database(); // Create a new database
 		}
 	}

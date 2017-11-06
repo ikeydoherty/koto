@@ -1,4 +1,5 @@
 public class Koto : Gtk.Window {
+	public KotoDatabase kotodb;
 	public KotoFileIO kotoio;
 	public KotoHeaderBar header;
 	public KotoMenuPopover menu_popover;
@@ -56,8 +57,8 @@ public class Koto : Gtk.Window {
 		destroy.connect(method_destroy);
 		show_all();
 
+		kotodb = new KotoDatabase();
 		//kotoio.get_directory_content(kotoio.music_dir, "file", true);
-		var kotodb = new KotoDatabase();
 	}
 
 	// create_views is responsible for the creation of our Gtk.Stack
