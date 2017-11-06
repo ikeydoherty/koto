@@ -5,7 +5,7 @@ public class KotoFileIO : Object {
 	public string music_dir; // User Music Directory
 
 	public KotoFileIO() {
-		music_dir = GLib.Environment.get_user_special_dir(GLib.UserDirectory.MUSIC); // Get the user's Music directory, using XDG special user directories
+		music_dir = Environment.get_user_special_dir(UserDirectory.MUSIC); // Get the user's Music directory, using XDG special user directories
 		TagLib.ID3v2.set_default_text_encoding (TagLib.ID3v2.Encoding.UTF8);
 	}
 
@@ -17,20 +17,20 @@ public class KotoFileIO : Object {
 			complete_dir += "/";
 		}
 
-		var dir_file = GLib.File.new_for_path(complete_dir); // Create a new File for the path
+		var dir_file = File.new_for_path(complete_dir); // Create a new File for the path
 		Array<string> contents = new Array<string> (); // Create a contents array
 
 		try {
-			GLib.Cancellable cancellable = null;
-			GLib.FileEnumerator file_enum = dir_file.enumerate_children("standard::*", FileQueryInfoFlags.NONE, cancellable); // Start enumerating children
+			Cancellable cancellable = null;
+			FileEnumerator file_enum = dir_file.enumerate_children("standard::*", FileQueryInfoFlags.NONE, cancellable); // Start enumerating children
 
-			GLib.FileInfo inner_music_file = null;
+			FileInfo inner_music_file = null;
 			while (!cancellable.is_cancelled() && ((inner_music_file = file_enum.next_file(cancellable)) != null)) { // While our IO operation wasn't cancelled and we have a next file
-				GLib.FileType file_type = inner_music_file.get_file_type(); // Get the file type
+				FileType file_type = inner_music_file.get_file_type(); // Get the file type
 				string file_full_path = complete_dir + inner_music_file.get_name();
 
 				if (!inner_music_file.get_is_hidden()) { // If this is not a hidden file
-					if ((file_type == GLib.FileType.DIRECTORY) || (file_type == GLib.FileType.SYMBOLIC_LINK)) { // If this is a directory or a symlink (possibly a directory)
+					if ((file_type == FileType.DIRECTORY) || (file_type == FileType.SYMBOLIC_LINK)) { // If this is a directory or a symlink (possibly a directory)
 						if (type == "directory") {
 							contents.append_val(complete_dir + inner_music_file.get_display_name()); // Add the path
 						}
@@ -42,7 +42,7 @@ public class KotoFileIO : Object {
 								contents.append_vals(dir_content, dir_content.length);
 							}
 						}
-					} else if (file_type == GLib.FileType.REGULAR) { // If we're looking for a file and this is one
+					} else if (file_type == FileType.REGULAR) { // If we're looking for a file and this is one
 						string content_type = inner_music_file.get_content_type(); // Get the content type so we can do some basic content type checking
 
 						if ((type == "file") && (content_type.has_prefix("audio/") || (content_type.has_suffix("+ogg")))) { // If this has an audio mimetype or may be playable (some ogg reports as video/)
@@ -66,7 +66,7 @@ public class KotoFileIO : Object {
 		}
 	}
 
-	public void get_metadata(GLib.FileInfo fileinfo, string filepath) {
+	public void get_metadata(FileInfo fileinfo, string filepath) {
 		TagLib.File file = new TagLib.File(filepath);
 		string artist = _("Unknown");
 		string album = _("Unknown");
@@ -106,6 +106,6 @@ public class KotoFileIO : Object {
 			}
 		}
 
-		stdout.printf("Artist:%s\nAlbum:%s\nTitle:%s\nTrack:%d\n", artist, album, title, track);
+		stdout.printf("Artist:%s\nAlbum:%s\nTitle:%s\nTrack:%dPath:%s\nPath Hash:%s\n", artist, album, title, track, filepath, filepath.hash().to_string());
 	}
 }

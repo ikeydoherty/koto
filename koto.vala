@@ -20,7 +20,7 @@ public class Koto : Gtk.Window {
 
 	public Koto() {
 		Object(
-			icon_name: "audio-headphones",
+			icon_name: "audio-headphones", // Use audio-headphones for now
 			startup_id: "koto",
 			title: "Koto",
 			type: Gtk.WindowType.TOPLEVEL,
@@ -56,7 +56,8 @@ public class Koto : Gtk.Window {
 		destroy.connect(method_destroy);
 		show_all();
 
-		kotoio.get_directory_content(kotoio.music_dir, "file", true);
+		//kotoio.get_directory_content(kotoio.music_dir, "file", true);
+		var kotodb = new KotoDatabase();
 	}
 
 	// create_views is responsible for the creation of our Gtk.Stack
