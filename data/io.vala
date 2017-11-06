@@ -1,111 +1,113 @@
 // This file contains IO related functionality used by Koto
 // NOTE: Some of this is temporary and only used for testing purposes. So don't flip out, k? Kthx.
 
-public class KotoFileIO : Object {
-	public string music_dir; // User Music Directory
+namespace Koto {
+	public class KotoFileIO : Object {
+		public string music_dir; // User Music Directory
 
-	public KotoFileIO() {
-		music_dir = Environment.get_user_special_dir(UserDirectory.MUSIC); // Get the user's Music directory, using XDG special user directories
-		TagLib.ID3v2.set_default_text_encoding (TagLib.ID3v2.Encoding.UTF8);
-	}
-
-	// get_directory_content will get a list of content (directories or files)
-	public Array<string> get_directory_content(string dir, string type, bool? recursive = false) {
-		var complete_dir = dir;
-
-		if (!complete_dir.has_suffix("/")) {
-			complete_dir += "/";
+		public KotoFileIO() {
+			music_dir = Environment.get_user_special_dir(UserDirectory.MUSIC); // Get the user's Music directory, using XDG special user directories
+			TagLib.ID3v2.set_default_text_encoding (TagLib.ID3v2.Encoding.UTF8);
 		}
 
-		var dir_file = File.new_for_path(complete_dir); // Create a new File for the path
-		Array<string> contents = new Array<string> (); // Create a contents array
+		// get_directory_content will get a list of content (directories or files)
+		public Array<string> get_directory_content(string dir, string type, bool? recursive = false) {
+			var complete_dir = dir;
 
-		try {
-			Cancellable cancellable = null;
-			FileEnumerator file_enum = dir_file.enumerate_children("standard::*", FileQueryInfoFlags.NONE, cancellable); // Start enumerating children
+			if (!complete_dir.has_suffix("/")) {
+				complete_dir += "/";
+			}
 
-			FileInfo inner_music_file = null;
-			while (!cancellable.is_cancelled() && ((inner_music_file = file_enum.next_file(cancellable)) != null)) { // While our IO operation wasn't cancelled and we have a next file
-				FileType file_type = inner_music_file.get_file_type(); // Get the file type
-				string file_full_path = complete_dir + inner_music_file.get_name();
+			var dir_file = File.new_for_path(complete_dir); // Create a new File for the path
+			Array<string> contents = new Array<string> (); // Create a contents array
 
-				if (!inner_music_file.get_is_hidden()) { // If this is not a hidden file
-					if ((file_type == FileType.DIRECTORY) || (file_type == FileType.SYMBOLIC_LINK)) { // If this is a directory or a symlink (possibly a directory)
-						if (type == "directory") {
-							contents.append_val(complete_dir + inner_music_file.get_display_name()); // Add the path
-						}
+			try {
+				Cancellable cancellable = null;
+				FileEnumerator file_enum = dir_file.enumerate_children("standard::*", FileQueryInfoFlags.NONE, cancellable); // Start enumerating children
 
-						if (recursive) { // If we should do recursion
-							var dir_content = get_directory_content(file_full_path, type, recursive);
+				FileInfo inner_music_file = null;
+				while (!cancellable.is_cancelled() && ((inner_music_file = file_enum.next_file(cancellable)) != null)) { // While our IO operation wasn't cancelled and we have a next file
+					FileType file_type = inner_music_file.get_file_type(); // Get the file type
+					string file_full_path = complete_dir + inner_music_file.get_name();
 
-							if (dir_content.length != 0) { // If there is content to append
-								contents.append_vals(dir_content, dir_content.length);
+					if (!inner_music_file.get_is_hidden()) { // If this is not a hidden file
+						if ((file_type == FileType.DIRECTORY) || (file_type == FileType.SYMBOLIC_LINK)) { // If this is a directory or a symlink (possibly a directory)
+							if (type == "directory") {
+								contents.append_val(complete_dir + inner_music_file.get_display_name()); // Add the path
+							}
+
+							if (recursive) { // If we should do recursion
+								var dir_content = get_directory_content(file_full_path, type, recursive);
+
+								if (dir_content.length != 0) { // If there is content to append
+									contents.append_vals(dir_content, dir_content.length);
+								}
+							}
+						} else if (file_type == FileType.REGULAR) { // If we're looking for a file and this is one
+							string content_type = inner_music_file.get_content_type(); // Get the content type so we can do some basic content type checking
+
+							if ((type == "file") && (content_type.has_prefix("audio/") || (content_type.has_suffix("+ogg")))) { // If this has an audio mimetype or may be playable (some ogg reports as video/)
+								file_full_path = inner_music_file.get_is_symlink() ? inner_music_file.get_symlink_target() : file_full_path;
+
+								contents.append_val(file_full_path);
+								get_metadata(inner_music_file, file_full_path);
 							}
 						}
-					} else if (file_type == FileType.REGULAR) { // If we're looking for a file and this is one
-						string content_type = inner_music_file.get_content_type(); // Get the content type so we can do some basic content type checking
-
-						if ((type == "file") && (content_type.has_prefix("audio/") || (content_type.has_suffix("+ogg")))) { // If this has an audio mimetype or may be playable (some ogg reports as video/)
-							file_full_path = inner_music_file.get_is_symlink() ? inner_music_file.get_symlink_target() : file_full_path;
-
-							contents.append_val(file_full_path);
-							get_metadata(inner_music_file, file_full_path);
-						}
 					}
 				}
-			}
 
-			if (cancellable.is_cancelled()) { // If IO was cancelled
-				throw new IOError.CANCELLED("Operation was cancelled.");
-			} else {
+				if (cancellable.is_cancelled()) { // If IO was cancelled
+					throw new IOError.CANCELLED("Operation was cancelled.");
+				} else {
+					return contents;
+				}
+			} catch (Error e) {
+				stdout.printf(e.message);
 				return contents;
 			}
-		} catch (Error e) {
-			stdout.printf(e.message);
-			return contents;
 		}
-	}
 
-	public void get_metadata(FileInfo fileinfo, string filepath) {
-		TagLib.File file = new TagLib.File(filepath);
-		string artist = _("Unknown");
-		string album = _("Unknown");
-		string title;
-		int length = 0;
-		int track = 0;
+		public void get_metadata(FileInfo fileinfo, string filepath) {
+			TagLib.File file = new TagLib.File(filepath);
+			string artist = _("Unknown");
+			string album = _("Unknown");
+			string title;
+			int length = 0;
+			int track = 0;
 
-		if (file != null && file.tag != null) { // If we successfully retrieved id3 information
-			artist = (file.tag.artist != "") ? file.tag.artist : _("Unknown");
-			album = (file.tag.album != "") ? file.tag.album : _("Unknown");
-			title = (file.tag.title != "") ? file.tag.title : _("Unknown");
-			length = (file.audioproperties != null) ? file.audioproperties.length : 0;
-			track = int.parse(file.tag.track.to_string("%d"));
-		} else { // If we failed to fetch id3 information
-			title = fileinfo.get_edit_name(); // At least treat the title as the display name
-			int last_index_of_dot = title.last_index_of("."); // Get the last index
-			title = title.substring(0, last_index_of_dot);
+			if (file != null && file.tag != null) { // If we successfully retrieved id3 information
+				artist = (file.tag.artist != "") ? file.tag.artist : _("Unknown");
+				album = (file.tag.album != "") ? file.tag.album : _("Unknown");
+				title = (file.tag.title != "") ? file.tag.title : _("Unknown");
+				length = (file.audioproperties != null) ? file.audioproperties.length : 0;
+				track = int.parse(file.tag.track.to_string("%d"));
+			} else { // If we failed to fetch id3 information
+				title = fileinfo.get_edit_name(); // At least treat the title as the display name
+				int last_index_of_dot = title.last_index_of("."); // Get the last index
+				title = title.substring(0, last_index_of_dot);
 
-			if (title.index_of(" - ") != -1) { // If there might be some form of Artist - Song Name
-				var splitName = title.split(" - ", 2);
-				var potential_artist = splitName[0].strip();
-				title = splitName[1];
+				if (title.index_of(" - ") != -1) { // If there might be some form of Artist - Song Name
+					var splitName = title.split(" - ", 2);
+					var potential_artist = splitName[0].strip();
+					title = splitName[1];
 
-				if (potential_artist.length > 2) { // If the artist string is not likely to just be numbers
-					artist = potential_artist;
+					if (potential_artist.length > 2) { // If the artist string is not likely to just be numbers
+						artist = potential_artist;
 
-					try {
-						Regex regex = new Regex("^([0-9]+)\\s"); // Attempt a regex where we strip out any prefixed numbers
-						artist = regex.replace(artist, artist.length, 0, "").strip(); // Replace the prefixed numbers and trim whitespace
-						track = int.parse(potential_artist.replace(artist, "").strip()); // Do the inverse, strip out the likely artist so we get the numbers, and trim
-					} catch (RegexError err) {
-						stdout.printf("%s", err.message);
+						try {
+							Regex regex = new Regex("^([0-9]+)\\s"); // Attempt a regex where we strip out any prefixed numbers
+							artist = regex.replace(artist, artist.length, 0, "").strip(); // Replace the prefixed numbers and trim whitespace
+							track = int.parse(potential_artist.replace(artist, "").strip()); // Do the inverse, strip out the likely artist so we get the numbers, and trim
+						} catch (RegexError err) {
+							stdout.printf("%s", err.message);
+						}
+					} else { // If the artist string is likely to just be numbers
+						track = int.parse(potential_artist); // Parse as an int and set to track
 					}
-				} else { // If the artist string is likely to just be numbers
-					track = int.parse(potential_artist); // Parse as an int and set to track
 				}
 			}
-		}
 
-		stdout.printf("Artist:%s\nAlbum:%s\nTitle:%s\nTrack:%dPath:%s\nPath Hash:%s\n", artist, album, title, track, filepath, filepath.hash().to_string());
+			kotodb.add_track(filepath, title, artist, album, track); // Add our track to the database
+		}
 	}
 }

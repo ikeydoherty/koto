@@ -2,8 +2,8 @@
 
 public class KotoDatabase : Object {
 	public Sqlite.Database db; // Our Sqlite3 Database
-	public bool allow_writes;
-	public bool is_first_run;
+	public bool allow_writes = false;
+	public bool is_first_run = false;
 	private string location;
 	private string version_s;
 	private double version;
@@ -13,7 +13,7 @@ public class KotoDatabase : Object {
 		version = 0.1;
 		location = (Path.build_path(Path.DIR_SEPARATOR_S, Environment.get_user_config_dir(), "koto", "koto-" +  version_s + ".db"));
 
-		int open_err = Sqlite.Database.open(location, out db);
+		int open_err = Sqlite.Database.open_v2(location, out db, Sqlite.OPEN_READWRITE);
 		allow_writes = true;
 
 		if (open_err != Sqlite.OK) { // If we failed to open database
@@ -96,5 +96,24 @@ public class KotoDatabase : Object {
 		}
 
 		return message;
+	}
+
+	// add_track is responsible for adding a track to our library
+	public void add_track(string a_path, string a_title, string a_artist, string a_album, int track) {
+		if  (allow_writes) {
+			string id = a_path.hash().to_string(); // Create an id based on the hash
+
+			string path = Uri.escape_string(a_path);
+			string title = Uri.escape_string(a_title);
+			string artist = Uri.escape_string(a_artist);
+			string album = Uri.escape_string(a_album);
+
+			string insert_track_sql = @"INSERT INTO library (id, artist, album, path, title, track)	VALUES ('$id', '$artist', '$album', '$path', '$title', $track);";
+			int exec_err = db.exec(insert_track_sql);
+
+			if (exec_err != Sqlite.OK) {
+				stderr.printf("Failed to add our track: %s\n", get_failure_string(exec_err));
+			}
+		}
 	}
 }
