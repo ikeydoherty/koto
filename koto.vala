@@ -15,9 +15,12 @@ namespace Koto {
 		public string current_library_view;
 
 		public static int main (string[] args) {
+			if (!Thread.supported()) {
+				error("Cannot run without Vala threading support.");
+			}
+
 			Gtk.init(ref args);
 			app = new KotoApp();
-			app.show_all();
 			Gtk.main();
 			return 0;
 		}
@@ -58,12 +61,20 @@ namespace Koto {
 			add(global_container);
 
 			destroy.connect(method_destroy);
-			show_all();
 
-			kotodb = new KotoDatabase();
+			kotodb = new KotoDatabase(); // Create a new database
 
-			if (kotodb.allow_writes && kotodb.is_first_run) { // If this is our first run and we can write to the database
-				kotoio.get_directory_content(kotoio.music_dir, "file", true); // Propagate the DB
+			if (kotodb.is_first_run) { // If this is our first run
+				var getting_started = new KotoGettingStartedView();
+				global_container.add(getting_started);
+
+				// Only show what is absolutely necessary
+				getting_started.show();
+				header.show();
+				global_container.show();
+				show();
+			} else {
+				show_all();
 			}
 		}
 

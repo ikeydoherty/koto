@@ -5,6 +5,7 @@ gee_dep = dependency('gee-0.8', version: '>=0.20.0')
 glib_dep = dependency('glib-2.0')
 gobject_dep = dependency('gobject-2.0')
 gtk_dep = dependency('gtk+-3.0', version: '>=3.22.0')
+pango_dep = dependency('pango', version: '>=1.40.0')
 sqlite_dep = dependency('sqlite3', version: '>=3.20.0')
 taglib_dep = dependency('taglib_c', version: '>=1.11.0')
 
@@ -22,16 +23,19 @@ files = files(
 	'controls/playerbar.vala',
 	'controls/views_list.vala',
 	'data/artist.vala',
+	'data/indexer.vala',
 	'data/db.vala',
 	'data/io.vala',
-	'views/view_devices.vala',
-	'views/view_library_grid.vala',
-	'views/view_library_list.vala',
+	'views/devices.vala',
+	'views/getting_started.vala',
+	'views/library_grid.vala',
+	'views/library_list.vala',
 	'koto.vala',
 )
 
 executable(
 	'koto',
 	files,
-	dependencies: [glib_dep, gobject_dep, gtk_dep, sqlite_dep, taglib_dep]
+	dependencies: [gee_dep, glib_dep, gobject_dep, gtk_dep, pango_dep, sqlite_dep, taglib_dep],
+	link_args: '-lm'
 )
