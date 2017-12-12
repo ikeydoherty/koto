@@ -48,10 +48,7 @@ namespace Koto {
 								Koto.kotodb.add_track(file_full_path, metadata.title, metadata.artist, metadata.album, metadata.track); // Call to the DB to add the track
 
 								this.file_count++; // Add one to our file count
-
-								if ((this.file_count % 500 == 0)) { // For every 500th files
-									increment(this.file_count);
-								}
+								increment(this.file_count);
 							}
 						}
 					}

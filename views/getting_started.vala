@@ -11,7 +11,7 @@ namespace Koto {
 		public KotoGettingStartedView() {
 			Object(orientation: Gtk.Orientation.VERTICAL, spacing: 20);
 
-			set_size_request(400, -1); // Maximum of 400px
+			set_size_request(400, 180); // Maximum of 400 by 180px
 			halign = Gtk.Align.CENTER; // Ensure we align in center of parent container
 			valign = Gtk.Align.CENTER; // Ensure we align in center of parent container
 			vexpand = true; // Expand as much as necessary
@@ -24,7 +24,7 @@ namespace Koto {
 			header_attributes.insert(Pango.attr_scale_new(2));
 			welcome_header.attributes = header_attributes;
 
-			string welcome_message = "Looks like you have launched this for the first time.\nLet's crunch some numbers and index your audio files!";
+			string welcome_message = _("Looks like you have launched this for the first time.\nLet's crunch some numbers and index your audio files!");
 
 			Gtk.Label welcome_info = new Gtk.Label(welcome_message);
 			welcome_info.justify = Gtk.Justification.CENTER; // Center the text
@@ -56,9 +56,8 @@ namespace Koto {
 			pack_start(welcome_header, true, false, 0);
 			pack_start(welcome_info, true, false, 0);
 			pack_start(start_indexing, false, false, 0);
-			pack_start(progress, false, false, 0);
+			pack_start(progress, true, false, 0);
 			pack_start(start_listening, false, false);
-
 			welcome_header.show();
 			welcome_info.show();
 			start_indexing.show();
@@ -78,22 +77,24 @@ namespace Koto {
 			music_indexer.done.connect(() => { // Connect to the done signal
 				stdout.printf("Indexing complete.\n");
 				progress.set_text(_("Done indexing. Loading library view..."));
+				progress.queue_draw();
 			});
 
 			music_indexer.increment.connect((count) => { // Listen to our large file increment signal
 				var new_text = "";
 
-				if (count == 2500) {
+				if ((count >= 2500) && (count <= 3000)) {
 					new_text = _("Spotify exists. Just saying.");
-				} else 	if (count == 5000) {
+				} else 	if ((count >= 5000) && (count <= 5500)) {
 					new_text = _("Did you actually buy all of this?");
-				} else if (count == 10000) {
+				} else if ((count >= 10000) && (count <=  10500)) {
 					new_text = _("I'm not even mad. That's amazing.");
+				} else {
+					new_text = _("Indexed %s files...").printf(count.to_string());
 				}
 
-				if (new_text != "") {
-					progress.set_text(new_text);
-				}
+				progress.set_text(new_text);
+				progress.queue_draw();
 			});
 
 			new Thread<void*>("music-indexer", music_indexer.index);
@@ -103,6 +104,7 @@ namespace Koto {
 					if (now >= (Koto.last_index_check + 250000)) { // If we're 250ms (250k microseconds) in the future
 						Koto.last_index_check = now;
 						progress.pulse();
+						progress.queue_draw();
 					}
 				}
 
