@@ -1,12 +1,14 @@
 namespace Koto {
 	public class Indexer {
+		public int64 file_count; 
 		public bool indexing_complete;
-		public SourceFunc indexing_complete_func;
+		public signal void done();
+		public signal void increment(int64 count);
 		public string loc;
 		public string type;
 
-		public Indexer(string t, string l, SourceFunc done) {
-			indexing_complete_func = done;
+		public Indexer(string t, string l) {
+			file_count = 0;
 			loc = l;
 			type = t;
 		}
@@ -15,7 +17,7 @@ namespace Koto {
 			this.get_directory_contents.begin(this.loc, false, (obj, res) => {
 				this.get_directory_contents.end(res);
 				this.indexing_complete = true;
-				indexing_complete_func();
+				done();
 			});
 
 			return null;
@@ -44,6 +46,12 @@ namespace Koto {
 								file_full_path = inner_music_file.get_is_symlink() ? inner_music_file.get_symlink_target() : file_full_path;
 								KotoTrackMetadata metadata = Koto.kotoio.get_metadata(file_full_path); // Get the metadata and add to the index
 								Koto.kotodb.add_track(file_full_path, metadata.title, metadata.artist, metadata.album, metadata.track); // Call to the DB to add the track
+
+								this.file_count++; // Add one to our file count
+
+								if ((this.file_count % 500 == 0)) { // For every 500th files
+									increment(this.file_count);
+								}
 							}
 						}
 					}

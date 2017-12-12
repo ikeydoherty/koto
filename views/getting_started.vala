@@ -73,9 +73,27 @@ namespace Koto {
 			progress.pulse(); // Pulse back and forth until we get a list
 			progress.show_all(); // Show the progress var
 
-			var music_indexer = new Koto.Indexer("dir", kotoio.music_dir, () => { // Create a dir-type indexer for our XDG music directory
+			var music_indexer = new Koto.Indexer("dir", kotoio.music_dir); // Create a dir-type indexer for our XDG music directory
+
+			music_indexer.done.connect(() => { // Connect to the done signal
 				stdout.printf("Indexing complete.\n");
-				return true;
+				progress.set_text(_("Done indexing. Loading library view..."));
+			});
+
+			music_indexer.increment.connect((count) => { // Listen to our large file increment signal
+				var new_text = "";
+
+				if (count == 2500) {
+					new_text = _("Spotify exists. Just saying.");
+				} else 	if (count == 5000) {
+					new_text = _("Did you actually buy all of this?");
+				} else if (count == 10000) {
+					new_text = _("I'm not even mad. That's amazing.");
+				}
+
+				if (new_text != "") {
+					progress.set_text(new_text);
+				}
 			});
 
 			new Thread<void*>("music-indexer", music_indexer.index);
