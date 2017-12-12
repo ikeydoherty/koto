@@ -64,4 +64,18 @@ public class KotoPlayerBar : Gtk.Box {
 		pack_start(middle_controls, true, true, 0); // Add Middle Controls and ensure it sits in center
 		pack_start(right_controls, false, false, 0); // Add Right Controls
 	}
+
+	// Enable the PlayerBar
+	public void Enable() {
+		foreach (Gtk.Widget widget in get_children()){
+			widget.sensitive = true;
+		}
+	}
+
+	// Disable the PlayerBar
+	public void Disable() {
+		foreach (Gtk.Widget widget in get_children()){
+			widget.sensitive = false;
+		}
+	}
 }

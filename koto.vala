@@ -75,6 +75,7 @@ namespace Koto {
 				show();
 			} else {
 				show_all();
+				playerbar.Disable(); // Disable until we start playback
 			}
 		}
 
