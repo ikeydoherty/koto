@@ -78,6 +78,12 @@ namespace Koto {
 				stdout.printf("Indexing complete.\n");
 				progress.set_text(_("Done indexing. Loading library view..."));
 				progress.queue_draw();
+
+				Koto.kotodb.load_data(); // Load our new data in
+				Koto.app.list_view.refresh(); // Refresh our list view
+				Koto.app.getting_started.hide();
+				Koto.app.main_container.show_all();
+				Koto.app.playerbar.show_all();
 			});
 
 			music_indexer.increment.connect((count) => { // Listen to our large file increment signal

@@ -8,11 +8,17 @@ namespace Koto {
 		public KotoMenuPopover menu_popover;
 		public KotoPlayerBar playerbar;
 
+		public Gtk.Box global_container;
+		public Gtk.Box main_container;
 		public Gtk.Stack global_views;
 		public Gtk.Stack library_views;
 
 		public string current_view;
 		public string current_library_view;
+
+		public KotoGettingStartedView getting_started;
+		public KotoLibraryGridView grid_view;
+		public KotoLibraryListView list_view;
 
 		public static int main (string[] args) {
 			if (!Thread.supported()) {
@@ -47,8 +53,8 @@ namespace Koto {
 			menu_popover = new KotoMenuPopover(); // Create our Menu Popover
 			playerbar = new KotoPlayerBar(); // Create our Playerbar
 
-			var global_container = new Gtk.Box(Gtk.Orientation.VERTICAL, 0);
-			var main_container = new Gtk.Box(Gtk.Orientation.HORIZONTAL, 0);
+			global_container = new Gtk.Box(Gtk.Orientation.VERTICAL, 0);
+			main_container = new Gtk.Box(Gtk.Orientation.HORIZONTAL, 0);
 			var views_list = new KotoViewsList(); // Create our new Views List
 			create_views(); // Create our views
 
@@ -64,7 +70,7 @@ namespace Koto {
 			destroy.connect(method_destroy);
 
 			if (kotodb.is_first_run) { // If this is our first run
-				var getting_started = new KotoGettingStartedView(); // Create the Getting Started view
+				getting_started = new KotoGettingStartedView(); // Create the Getting Started view
 				global_container.add(getting_started);
 
 				// Only show what is absolutely necessary
@@ -89,10 +95,10 @@ namespace Koto {
 
 			// Library Container and Views
 			var library_view_container = new Gtk.Box(Gtk.Orientation.VERTICAL, 0);
-			var library_list_view = new KotoLibraryListView(); // Construct our Library List View
-			var library_grid_view = new KotoLibraryGridView(); // Construct our Library Grid View
-			library_views.add_named(library_list_view, "list"); // Add List
-			library_views.add_named(library_grid_view, "grid"); // Add Grid
+			list_view = new KotoLibraryListView(); // Construct our Library List View
+			grid_view = new KotoLibraryGridView(); // Construct our Library Grid View
+			library_views.add_named(list_view, "list"); // Add List
+			library_views.add_named(grid_view, "grid"); // Add Grid
 			library_view_container.add(library_views); // Add the library stack to the container
 
 			// Stacks Setting and Global Push

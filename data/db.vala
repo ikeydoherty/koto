@@ -9,6 +9,7 @@ public class KotoDatabase : Object {
 	private double version;
 
 	public KotoDatabase() {
+		data = new Gee.HashMap<string,KotoArtist>(); // Create our data HashMap
 		version = 1;
 		location = (Path.build_path(Path.DIR_SEPARATOR_S, Environment.get_user_config_dir(), "koto", "koto-%s.db".printf(version.to_string())));
 
@@ -20,7 +21,6 @@ public class KotoDatabase : Object {
 			is_first_run = true;
 			allow_writes = create_new_database(); // Create a new database
 		} else { // If we already have a database and sucessfully opened it
-			data = new Gee.HashMap<string,KotoArtist>(); // Create our data HashMap
 			load_data();
 		}
 	}

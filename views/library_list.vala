@@ -28,11 +28,19 @@ namespace Koto {
 
 			pack_start(artist_scrollcontainer, false, false, 0);
 
+			if (Koto.kotodb.data.keys.size > 0) { // If there are items to load
+				refresh();
+			}
+		}
+
+		// propagate will do a refresh of the list view
+		public void refresh() {
 			foreach (string artist in Koto.kotodb.data.keys) { // For each artist
 				add_artist(artist);
 			}
 		}
 
+		// add_artist will create KotoTextListItem and add it to our artist list
 		public void add_artist(string artist) {
 			var list_item = new KotoTextListItem(artist);
 			artist_list.insert(list_item, -1); // Append to end of list since I'd rather we push to end then move to the right position on re-order than show it at the top then possibly hide it from view
