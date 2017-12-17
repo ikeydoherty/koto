@@ -38,9 +38,13 @@ namespace Koto {
 						artist = potential_artist;
 
 						try {
-							Regex regex = new Regex("^([0-9]+)\\s"); // Attempt a regex where we strip out any prefixed numbers
+							Regex regex = new Regex("^([0-9]+)"); // Attempt a regex where we strip out any prefixed numbers
 							var artist_name = regex.replace(artist, artist.length, 0, "").strip(); // Replace the prefixed numbers and trim whitespace
 							var track_s = artist.replace(artist_name, "").strip(); // Do the inverse, strip out the likely artist so we get the numbers, and trim
+
+							Regex strip_invalid_chars = new Regex("[^A-Za-zÄ-Öä-öåµø]"); // Attempt to strip out any odd characters
+							artist_name = strip_invalid_chars.replace(artist_name, artist_name.length, 0, "").strip();
+
 							artist = artist_name;
 							track = int.parse(track_s);
 						} catch (RegexError err) {
