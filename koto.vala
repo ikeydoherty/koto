@@ -35,9 +35,10 @@ namespace Koto {
 			);
 
 			kotoio = new KotoFileIO();
+			kotodb = new KotoDatabase(); // Create a new database
 
 			// Create our basic GTK Application
-			set_default_size(1000,600); // Set a default of 800px width by 600 height
+			set_default_size(1000,600); // Set a default of 1000px width by 600 height
 			title = "Koto";
 			current_view = "library"; // Default to library global view
 			current_library_view = "list"; // Default to list view until we implement preferences
@@ -61,8 +62,6 @@ namespace Koto {
 			add(global_container);
 
 			destroy.connect(method_destroy);
-
-			kotodb = new KotoDatabase(); // Create a new database
 
 			if (kotodb.is_first_run) { // If this is our first run
 				var getting_started = new KotoGettingStartedView(); // Create the Getting Started view

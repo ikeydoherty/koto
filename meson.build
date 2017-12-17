@@ -21,6 +21,7 @@ files = files(
 	'controls/menu_item.vala',
 	'controls/menu_popover.vala',
 	'controls/playerbar.vala',
+	'controls/text_list_item.vala',
 	'controls/views_list.vala',
 	'data/artist.vala',
 	'data/indexer.vala',
