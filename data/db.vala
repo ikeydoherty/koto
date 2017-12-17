@@ -2,16 +2,15 @@
 
 public class KotoDatabase : Object {
 	public Sqlite.Database db; // Our Sqlite3 Database
+	public Gee.HashMap<string,KotoArtist> data; // Our HashMap of artist, album, track data
 	public bool allow_writes = false;
 	public bool is_first_run = false;
 	private string location;
-	private string version_s;
 	private double version;
 
 	public KotoDatabase() {
-		version_s = "0.1";
-		version = 0.1;
-		location = (Path.build_path(Path.DIR_SEPARATOR_S, Environment.get_user_config_dir(), "koto", "koto-" +  version_s + ".db"));
+		version = 1;
+		location = (Path.build_path(Path.DIR_SEPARATOR_S, Environment.get_user_config_dir(), "koto", "koto-%s.db".printf(version.to_string())));
 
 		int open_err = Sqlite.Database.open_v2(location, out db, Sqlite.OPEN_READWRITE);
 		allow_writes = true;
@@ -20,6 +19,9 @@ public class KotoDatabase : Object {
 			stderr.printf("%s\n", get_failure_string(open_err));
 			is_first_run = true;
 			allow_writes = create_new_database(); // Create a new database
+		} else { // If we already have a database and sucessfully opened it
+			data = new Gee.HashMap<string,KotoArtist>(); // Create our data HashMap
+			load_data();
 		}
 	}
 
@@ -96,6 +98,58 @@ public class KotoDatabase : Object {
 		}
 
 		return message;
+	}
+
+	// load_data is responsible for loading our data and creating the necessary HashMap(s)
+	public void load_data() {
+		load_library();
+	}
+
+	// load_library will load our library contents (artists, albums, tracks);
+	public void load_library() {
+		Sqlite.Statement query;
+		const string librarySelection = "SELECT * FROM library";
+		db.prepare_v2(librarySelection, librarySelection.length, out query);
+
+		int cols = query.column_count(); // Number of columns
+		while (query.step() == Sqlite.ROW) { // For each row
+			var rowData = new Gee.HashMap<string, string>(); // Create a hashmap to hold our row data, where first string is column name and value is the column text
+
+			for (int i = 0; i < cols; i++) {
+				string column_name = query.column_name(i);
+				column_name = Uri.unescape_string(column_name);
+				string column_value = query.column_text(i);
+				column_value = Uri.unescape_string(column_value);
+
+				rowData.set(column_name, column_value);
+			}
+
+			var artist = rowData["artist"];
+			var album = rowData["album"];
+
+			if (!data.has_key(artist)) { // If this artist isn't in the HashMap
+				data[artist] = new KotoArtist(artist, null); // Create a new KotoArtist class for this artist. Don't add any albums yet
+			}
+
+			var track_num = int.parse(rowData["track"]);
+
+			var track = new KotoTrack(rowData["id"], rowData["path"], track_num, rowData["title"]); // Create a new KotoTrack from our row data
+			data[artist].add_track(album, track); // Add this track to the album, even if doesn't exist
+		}
+
+		foreach (KotoArtist artist in data.values) { // For each artist
+			stdout.printf("Artist: %s\n", artist.name);
+
+			foreach (KotoAlbum album in artist.albums.values) { // For each album
+				stdout.printf("  Album: %s\n", album.name);
+
+				foreach (KotoTrack track in album.tracks.values) { // For each track
+					stdout.printf("    #%d: %s\n", track.num, track.title);
+				}
+			}
+
+			stdout.printf("----\n");
+		}
 	}
 
 	// add_track is responsible for adding a track to our library

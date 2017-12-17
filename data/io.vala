@@ -23,7 +23,7 @@ namespace Koto {
 				album = (file.tag.album != "") ? file.tag.album : _("Unknown");
 				title = (file.tag.title != "") ? file.tag.title : _("Unknown");
 				length = (file.audioproperties != null) ? file.audioproperties.length : 0;
-				track = int.parse(file.tag.track.to_string("%d"));
+				track = (int) file.tag.track;
 			} else { // If we failed to fetch id3 information
 				title = Path.get_basename(filepath); // At least treat the title as the display name
 				int last_index_of_dot = title.last_index_of("."); // Get the last index
@@ -39,12 +39,18 @@ namespace Koto {
 
 						try {
 							Regex regex = new Regex("^([0-9]+)\\s"); // Attempt a regex where we strip out any prefixed numbers
-							artist = regex.replace(artist, artist.length, 0, "").strip(); // Replace the prefixed numbers and trim whitespace
-							track = int.parse(potential_artist.replace(artist, "").strip()); // Do the inverse, strip out the likely artist so we get the numbers, and trim
+							var artist_name = regex.replace(artist, artist.length, 0, "").strip(); // Replace the prefixed numbers and trim whitespace
+							var track_s = artist.replace(artist_name, "").strip(); // Do the inverse, strip out the likely artist so we get the numbers, and trim
+							artist = artist_name;
+							track = int.parse(track_s);
 						} catch (RegexError err) {
 							stdout.printf("%s", err.message);
 						}
 					} else { // If the artist string is likely to just be numbers
+						if (potential_artist.index_of("0") == 0) {
+							potential_artist = potential_artist.substring(1);
+						}
+
 						track = int.parse(potential_artist); // Parse as an int and set to track
 					}
 				}

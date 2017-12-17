@@ -65,7 +65,7 @@ namespace Koto {
 			kotodb = new KotoDatabase(); // Create a new database
 
 			if (kotodb.is_first_run) { // If this is our first run
-				var getting_started = new KotoGettingStartedView();
+				var getting_started = new KotoGettingStartedView(); // Create the Getting Started view
 				global_container.add(getting_started);
 
 				// Only show what is absolutely necessary

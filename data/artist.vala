@@ -2,21 +2,57 @@
 
 public class KotoArtist : Object {
 	public string name;
-	public KotoAlbum[] albums;
+	public Gee.HashMap<string,KotoAlbum> albums;
 
-	public KotoArtist(string a_name, KotoAlbum[] a_albums) {
+	public KotoArtist(string a_name, Gee.HashMap<string,KotoAlbum>? a_albums) {
 		name = a_name;
-		albums = a_albums;
+
+		if (albums != null) {
+			albums = a_albums;
+		} else {
+			albums = new Gee.HashMap<string,KotoAlbum>(); // Create an empty HashMap of albums
+		}
+	}
+
+	// add_album will add an album to our albums
+	public void add_album(string album_name, KotoTrack[]? tracks) {
+		var album = albums.get(album_name); // Get the album if it exists already
+
+		if (album == null) { // If this album doesn't exist
+			album = new KotoAlbum(album_name, tracks); // Create a new KotoAlbum
+		} else {
+			album.add_tracks(tracks); // Add tracks
+		}
+
+		albums[album_name] = album;
+	}
+
+	// add_track will add a track to an album
+	public void add_track(string album_name, KotoTrack track) {
+		KotoTrack[] tracks = { track }; // Create a new tracks array
+		add_album(album_name, tracks);
 	}
 }
 
 public class KotoAlbum : Object {
 	public string name;
-	public KotoTrack[] tracks;
+	public Gee.HashMap<string,KotoTrack> tracks;
 
-	public KotoAlbum(string a_name, KotoTrack[] a_tracks) {
+	public KotoAlbum(string a_name, KotoTrack[]? a_tracks) {
 		name = a_name;
-		tracks = a_tracks;
+		tracks = new Gee.HashMap<string,KotoTrack>(); // Create an empty HashMap of tracks
+
+		if (a_tracks != null) { // If we were provided a HashMap of KotoTracks
+			add_tracks(a_tracks);
+		}
+	}
+
+	// add_tracks will add all the tracks provided, only updating 
+	// TODO: Make this not suck.
+	public void add_tracks(KotoTrack[]? added_tracks) {
+		foreach (KotoTrack track in added_tracks) { // For reach track in tracks
+			tracks.set(track.id, track); // Set in tracks this track, with the key being the track ID
+		}
 	}
 }
 
