@@ -45,7 +45,7 @@ namespace Koto {
 							if ((content_type.has_prefix("audio/") || (content_type.has_suffix("+ogg")))) { // If this has an audio mimetype or may be playable (some ogg reports as video/)
 								file_full_path = inner_music_file.get_is_symlink() ? inner_music_file.get_symlink_target() : file_full_path;
 								KotoTrackMetadata metadata = Koto.kotoio.get_metadata(file_full_path); // Get the metadata and add to the index
-								Koto.kotodb.add_track(file_full_path, metadata.title, metadata.artist, metadata.album, metadata.track); // Call to the DB to add the track
+								Koto.kotodb.add_track(file_full_path, metadata); // Call to the DB to add the track
 
 								this.file_count++; // Add one to our file count
 								increment(this.file_count);

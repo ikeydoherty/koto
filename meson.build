@@ -2,9 +2,10 @@ project('koto', 'vala', 'c')
 
 # Dependencies
 gee_dep = dependency('gee-0.8', version: '>=0.20.0')
+gdk_dep = dependency('gdk-3.0', version: '>=3.22.26')
 glib_dep = dependency('glib-2.0')
 gobject_dep = dependency('gobject-2.0')
-gtk_dep = dependency('gtk+-3.0', version: '>=3.22.0')
+gtk_dep = dependency('gtk+-3.0', version: '>=3.22.26')
 pango_dep = dependency('pango', version: '>=1.40.0')
 sqlite_dep = dependency('sqlite3', version: '>=3.20.0')
 taglib_dep = dependency('taglib_c', version: '>=1.11.0')
@@ -16,8 +17,10 @@ cdata.set_quoted('GETTEXT_PACKAGE', 'koto')
 add_global_arguments('-DGETTEXT_PACKAGE="koto"', language: 'c')
 
 files = files(
+	'controls/album_item.vala',
 	'controls/flat_icon_button.vala',
 	'controls/headerbar.vala',
+	'controls/list.vala',
 	'controls/menu_item.vala',
 	'controls/menu_popover.vala',
 	'controls/playerbar.vala',
@@ -37,6 +40,6 @@ files = files(
 executable(
 	'koto',
 	files,
-	dependencies: [gee_dep, glib_dep, gobject_dep, gtk_dep, pango_dep, sqlite_dep, taglib_dep],
+	dependencies: [gee_dep, gdk_dep, glib_dep, gobject_dep, gtk_dep, pango_dep, sqlite_dep, taglib_dep],
 	link_args: '-lm'
 )

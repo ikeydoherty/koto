@@ -8,6 +8,15 @@ public class KotoDatabase : Object {
 	private string location;
 	private double version;
 
+	private string[] acceptable_artwork_filenames = {
+		"cover.jpg",
+		"cover.png",
+		"Folder.jpg",
+		"Folder.png",
+		"folder.jpg",
+		"folder.png"
+	};
+
 	public KotoDatabase() {
 		data = new Gee.HashMap<string,KotoArtist>(); // Create our data HashMap
 		version = 1;
@@ -45,9 +54,16 @@ public class KotoDatabase : Object {
 					id             TEXT    PRIMARY KEY    NOT NULL,
 					artist      TEXT                                   NOT NULL,
 					album    TEXT                                  NOT NULL,
+					genre      TEXT                                  NOT NULL,
 					path        TEXT                                  NOT NULL,
 					title         TEXT                                  NOT NULL,
 					track       INT                                     NOT NULL
+				);
+
+				CREATE TABLE artwork (
+					artist    TEXT    NOT NULL,
+					album  TEXT   NOT NULL,
+					art         TEXT   NOT NULL
 				);
 
 				CREATE TABLE playlists (
@@ -102,10 +118,75 @@ public class KotoDatabase : Object {
 
 	// load_data is responsible for loading our data and creating the necessary HashMap(s)
 	public void load_data() {
-		load_library();
+		load_library(); // Load our library (files)
+		load_artwork(); // Load associated artwork for files - By load really it's "make sure artwork is properly indexed"
 	}
 
-	// load_library will load our library contents (artists, albums, tracks);
+	// load_artwork will check for artwork associated with an artist and their album
+	public void load_artwork() {
+		foreach (string artist in data.keys) { // For each artist in our HashMap
+			foreach (KotoAlbum album in data[artist].albums.values) { // For each album associated with this artist
+				Sqlite.Statement get_artwork_query;
+				var album_name = album.name;
+
+				var escaped_artist = Uri.escape_string(artist); // Oh noes the artist escaped
+				var escaped_album = Uri.escape_string(album_name);
+
+				string albumEntrySelection = @"SELECT art FROM artwork WHERE artist='$escaped_artist' AND album='$escaped_album'";
+				db.prepare_v2(albumEntrySelection, albumEntrySelection.length, out get_artwork_query);
+
+				string artwork = ""; // Set artwork to an empty string
+
+				while (get_artwork_query.step() == Sqlite.ROW) { // For each result returned
+					artwork = Uri.unescape_string(get_artwork_query.column_text(0)); // Get any existing artwork
+				}
+
+				if (artwork == "") { // If there is no artwork for this artist
+					foreach (KotoTrack track in album.tracks.values) { // For each track (only get first)
+						string album_path = Path.get_dirname(track.path); // Get the album path based on the path of the first track
+
+						File album_directory =  File.parse_name(album_path); // Create a new File based on the album path
+
+						if (album_directory != null) {
+							foreach (string artwork_filename in acceptable_artwork_filenames) { // For each artwork filename in our acceptable list
+								File artwork_file = album_directory.get_child(artwork_filename); // Get the potential file
+
+								if (artwork_file.query_exists()) { // If the file exists
+									try {
+										FileInfo artwork_fileinfo = artwork_file.query_info("standard::*", 0); // Get the file info
+
+										if (artwork_fileinfo.get_content_type().has_prefix("image/")) { // If this is an image
+											artwork = Uri.escape_string(Path.build_path(Path.DIR_SEPARATOR_S, album_path, artwork_filename));
+											break;
+										}
+									} catch (Error err) {
+										stdout.printf("Failed to get the artwork info for %s in %s: %s\n", artwork_filename, album_path, err.message);
+									}
+								}
+							}
+						}
+
+						break;
+					}
+
+					if (artwork != "") { // If we found artwork
+						stdout.printf("Found artwork: %s\n", Uri.unescape_string(artwork));
+						string insert_artwork_query = @"INSERT INTO artwork (artist, album, art) VALUES('$escaped_artist', '$escaped_album', '$artwork')";
+						string err_msg;
+						int insert_err = db.exec(insert_artwork_query, null, out err_msg);
+
+						if (insert_err != Sqlite.OK) {
+							stdout.printf("Failed to add our artwork: %s (%s) \n", get_failure_string(insert_err), err_msg);
+						}
+					}
+				}
+
+				album.artwork_uri = artwork; // Set this album's artwork_uri
+			}
+		}
+	}
+
+	// load_library will load our library contents (artists, albums, artwork, tracks);
 	public void load_library() {
 		Sqlite.Statement query;
 		const string librarySelection = "SELECT * FROM library";
@@ -133,7 +214,7 @@ public class KotoDatabase : Object {
 
 			var track_num = int.parse(rowData["track"]);
 
-			var track = new KotoTrack(rowData["id"], rowData["path"], track_num, rowData["title"]); // Create a new KotoTrack from our row data
+			var track = new KotoTrack(rowData["id"], rowData["path"], track_num, rowData["genre"], rowData["title"]); // Create a new KotoTrack from our row data
 			data[artist].add_track(album, track); // Add this track to the album, even if doesn't exist
 		}
 
@@ -145,6 +226,7 @@ public class KotoDatabase : Object {
 
 				foreach (KotoTrack track in album.tracks.values) { // For each track
 					stdout.printf("    #%d: %s\n", track.num, track.title);
+					stdout.printf("      Genre: %s\n", track.genre);
 				}
 			}
 
@@ -153,16 +235,18 @@ public class KotoDatabase : Object {
 	}
 
 	// add_track is responsible for adding a track to our library
-	public void add_track(string a_path, string a_title, string a_artist, string a_album, int track) {
+	public void add_track(string a_path, KotoTrackMetadata metadata) {
 		if  (allow_writes) {
 			string id = a_path.hash().to_string(); // Create an id based on the hash
 
+			string artist = Uri.escape_string(metadata.artist);
+			string album = Uri.escape_string(metadata.album);
+			string genre = Uri.escape_string(metadata.genre);
+			string title = Uri.escape_string(metadata.title);
 			string path = Uri.escape_string(a_path);
-			string title = Uri.escape_string(a_title);
-			string artist = Uri.escape_string(a_artist);
-			string album = Uri.escape_string(a_album);
+			int track = metadata.track;
 
-			string insert_track_sql = @"INSERT INTO library (id, artist, album, path, title, track)	VALUES ('$id', '$artist', '$album', '$path', '$title', $track);";
+			string insert_track_sql = @"INSERT INTO library (id, artist, album, genre, path, title, track)	VALUES ('$id', '$artist', '$album', '$genre', '$path', '$title', $track);";
 			int exec_err = db.exec(insert_track_sql);
 
 			if (exec_err != Sqlite.OK) {

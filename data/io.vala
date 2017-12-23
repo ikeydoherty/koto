@@ -1,5 +1,5 @@
 // This file contains IO related functionality used by Koto
-// NOTE: Some of this is temporary and only used for testing purposes. So don't flip out, k? Kthx.
+// Primarily for fetching tag info from a file or attempt to create metadata from the file pathing if no id3 info exists
 
 namespace Koto {
 	public class KotoFileIO : Object {
@@ -14,6 +14,7 @@ namespace Koto {
 			TagLib.File file = new TagLib.File(filepath);
 			string artist = _("Unknown");
 			string album = _("Unknown");
+			string genre = _("Unknown");
 			string title;
 			int length = 0;
 			int track = 0;
@@ -21,6 +22,7 @@ namespace Koto {
 			if (file != null && file.tag != null) { // If we successfully retrieved id3 information
 				artist = (file.tag.artist != "") ? file.tag.artist : _("Unknown");
 				album = (file.tag.album != "") ? file.tag.album : _("Unknown");
+				genre = (file.tag.genre != "") ? file.tag.genre : _("Unknown");
 				title = (file.tag.title != "") ? file.tag.title : _("Unknown");
 				length = (file.audioproperties != null) ? file.audioproperties.length : 0;
 				track = (int) file.tag.track;
@@ -60,7 +62,17 @@ namespace Koto {
 				}
 			}
 
-			return new KotoTrackMetadata(artist, album, title, track); // Return a new KotoTrackMetadata Object
+			// Do feat. / ft. dropping
+
+			string[] ft_strings = { "feat.", "ft." };
+			foreach (string ft_string in ft_strings) { // For each ft string
+				int ft_index = artist.index_of(ft_string);
+				if (ft_index != -1) { // If the artist contains this ft string
+					artist = artist.substring(0, ft_index).strip(); // Get the substring from before this ft_string
+				}
+			}
+
+			return new KotoTrackMetadata(artist, album, genre, title, track); // Return a new KotoTrackMetadata Object
 		}
 	}
 }

@@ -36,6 +36,7 @@ public class KotoArtist : Object {
 
 public class KotoAlbum : Object {
 	public string name;
+	public string artwork_uri;
 	public Gee.HashMap<string,KotoTrack> tracks;
 
 	public KotoAlbum(string a_name, KotoTrack[]? a_tracks) {
@@ -59,13 +60,15 @@ public class KotoAlbum : Object {
 public class KotoTrack : Object {
 	public string id; // Unique track ID
 	public string path; // File path to track
+	public string genre; // Genre for track
 	public int num; // Track number
 	public string title; // Track title
 
-	public KotoTrack(string t_id, string t_path, int t_num, string t_title) {
+	public KotoTrack(string t_id, string t_path, int t_num, string t_genre, string t_title) {
 		id = t_id;
 		path = t_path;
 		num = t_num;
+		genre = t_genre;
 		title = t_title;
 	}
 }
@@ -73,12 +76,14 @@ public class KotoTrack : Object {
 public class KotoTrackMetadata : Object {
 	public string artist;
 	public string album;
+	public string genre;
 	public string title;
 	public int track;
 
-	public KotoTrackMetadata(string t_artist, string t_album, string t_title, int t_track) {
+	public KotoTrackMetadata(string t_artist, string t_album, string t_genre, string t_title, int t_track) {
 		artist = t_artist;
 		album = t_album;
+		genre = t_genre;
 		title = t_title;
 		track = t_track;
 	}
