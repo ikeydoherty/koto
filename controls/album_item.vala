@@ -13,8 +13,6 @@ namespace Koto {
 			album_info = create_album_info(); // Create our album info
 
 			if (_album.artwork_uri != "") { // If we have album artwork
-				_album.artwork_uri = Uri.unescape_string(_album.artwork_uri); // Unescape the URI if it hasn't been already
-
 				try {
 					Gdk.Pixbuf artwork_pixbuf = new Gdk.Pixbuf.from_file_at_scale(_album.artwork_uri, 200, 200, true); // Use a Gdk.Pixbuf so we can scale the image up / down depending on its size
 					Gtk.Image album_art = new Gtk.Image.from_pixbuf(artwork_pixbuf); // Create a new image based on our artwork pixbuf
@@ -51,7 +49,13 @@ namespace Koto {
 			album_name_attrs.insert(Pango.attr_scale_new(1.4));
 			album_name_label.attributes = album_name_attrs;
 
-			Gtk.Label tracks_count = new Gtk.Label(_("Tracks (%s)").printf(_album.tracks.size.to_string()));
+			var tracks_count_str = _("Tracks (%s)"); // Default to tracks count being Tracks (num)
+
+			if (_album.genres.contains("Audiobook")) { // If this is an Audiobook
+				tracks_count_str = _("Chapters (%s)");
+			}
+
+			Gtk.Label tracks_count = new Gtk.Label(tracks_count_str.printf(_album.tracks.size.to_string()));
 			tracks_count.get_style_context().add_class("dim-label");
 			tracks_count.justify = Gtk.Justification.LEFT;
 			tracks_count.margin_bottom = 5; // Have some space between track count and list

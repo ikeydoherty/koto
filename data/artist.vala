@@ -35,12 +35,15 @@ public class KotoArtist : Object {
 }
 
 public class KotoAlbum : Object {
+	private string _artwork_uri;
+
 	public string name;
-	public string artwork_uri;
+	public Gee.ArrayList<string> genres;
 	public Gee.HashMap<string,KotoTrack> tracks;
 
 	public KotoAlbum(string a_name, KotoTrack[]? a_tracks) {
 		name = a_name;
+		genres = new Gee.ArrayList<string>(); // Set to an empty array
 		tracks = new Gee.HashMap<string,KotoTrack>(); // Create an empty HashMap of tracks
 
 		if (a_tracks != null) { // If we were provided a HashMap of KotoTracks
@@ -48,11 +51,23 @@ public class KotoAlbum : Object {
 		}
 	}
 
+	public string artwork_uri {
+		get { return _artwork_uri; }
+		set { _artwork_uri = Uri.unescape_string(value); }
+	}
+
 	// add_tracks will add all the tracks provided, only updating 
 	// TODO: Make this not suck.
 	public void add_tracks(KotoTrack[]? added_tracks) {
 		foreach (KotoTrack track in added_tracks) { // For reach track in tracks
 			tracks.set(track.id, track); // Set in tracks this track, with the key being the track ID
+			string[] track_genres = track.genre.split(";"); // Split the genres based on the semi-colon delimiter, which is what TagLib presents genres as
+
+			foreach (string genre in track_genres) { // For each genre specified
+				if (!genres.contains(genre)) { // If genres does not contain this genre
+					genres.add(genre); // Add this genre
+				}
+			}
 		}
 	}
 }
