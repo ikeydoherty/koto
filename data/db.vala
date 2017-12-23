@@ -219,7 +219,7 @@ public class KotoDatabase : Object {
 	}
 
 	// add_track is responsible for adding a track to our library
-	public void add_track(string a_path, KotoTrackMetadata metadata) {
+	public void add_track(string a_path, Koto.KotoTrackMetadata metadata) {
 		if  (allow_writes) {
 			string id = a_path.hash().to_string(); // Create an id based on the hash
 

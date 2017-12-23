@@ -1,7 +1,7 @@
 namespace Koto {
 	public KotoApp app;
 	public KotoDatabase kotodb;
-	public KotoFileIO kotoio;
+	public string music_dir; // User Music Directory
 
 	public class KotoApp : Gtk.Window {
 		public KotoHeaderBar header;
@@ -40,7 +40,7 @@ namespace Koto {
 				window_position: Gtk.WindowPosition.CENTER
 			);
 
-			kotoio = new KotoFileIO();
+			music_dir = Environment.get_user_special_dir(UserDirectory.MUSIC); // Get the user's Music directory, using XDG special user directories
 			kotodb = new KotoDatabase(); // Create a new database
 
 			// Create our basic GTK Application

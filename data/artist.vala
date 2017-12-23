@@ -87,19 +87,3 @@ public class KotoTrack : Object {
 		title = t_title;
 	}
 }
-
-public class KotoTrackMetadata : Object {
-	public string artist;
-	public string album;
-	public string genre;
-	public string title;
-	public int track;
-
-	public KotoTrackMetadata(string t_artist, string t_album, string t_genre, string t_title, int t_track) {
-		artist = t_artist;
-		album = t_album;
-		genre = t_genre;
-		title = t_title;
-		track = t_track;
-	}
-}

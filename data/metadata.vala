@@ -2,34 +2,42 @@
 // Primarily for fetching tag info from a file or attempt to create metadata from the file pathing if no id3 info exists
 
 namespace Koto {
-	public class KotoFileIO : Object {
-		public string music_dir; // User Music Directory
 
-		public KotoFileIO() {
-			music_dir = Environment.get_user_special_dir(UserDirectory.MUSIC); // Get the user's Music directory, using XDG special user directories
+	public class KotoTrackMetadata : Object {
+		public string artist;
+		public string album;
+		public string genre;
+		public string title;
+		public int track;
+	
+		public KotoTrackMetadata(string t_artist, string t_album, string t_genre, string t_title, int t_track) {
 			TagLib.ID3v2.set_default_text_encoding (TagLib.ID3v2.Encoding.UTF8);
-		}
 
-		public KotoTrackMetadata get_metadata(string filepath) {
+			artist = t_artist;
+			album = t_album;
+			genre = t_genre;
+			title = t_title;
+			track = t_track;
+		}
+	
+		public KotoTrackMetadata.from_file(string filepath) {
+			TagLib.ID3v2.set_default_text_encoding (TagLib.ID3v2.Encoding.UTF8);
 			var file_name = Path.get_basename(filepath); // At least treat the title as the display name;
 
 			int extension_index = file_name.last_index_of("."); // Get the last index of ., which should indicate extension name
 			string file_extension = file_name.substring(extension_index); // Get the extension of the file
 
 			TagLib.File file = new TagLib.File(filepath);
-			string artist = _("Unknown");
-			string album = _("Unknown");
-			string genre = _("Unknown");
-			string title;
-			int length = 0;
-			int track = 0;
+			artist = _("Unknown");
+			album = _("Unknown");
+			genre = _("Unknown");
+			track = 0;
 
 			if (file != null && file.tag != null) { // If we successfully retrieved id3 information
 				artist = (file.tag.artist != "") ? file.tag.artist : _("Unknown");
 				album = (file.tag.album != "") ? file.tag.album : _("Unknown");
 				genre = (file.tag.genre != "") ? file.tag.genre : _("Unknown");
 				title = (file.tag.title != "") ? file.tag.title : _("Unknown");
-				length = (file.audioproperties != null) ? file.audioproperties.length : 0;
 				track = (int) file.tag.track;
 			} else { // If we failed to fetch id3 information
 				title = file_name.replace(file_extension, ""); // Set title to file_name without the extension
@@ -116,8 +124,6 @@ namespace Koto {
 					artist = artist.substring(0, ft_index).strip(); // Get the substring from before this ft_string
 				}
 			}
-
-			return new KotoTrackMetadata(artist, album, genre, title, track); // Return a new KotoTrackMetadata Object
 		}
 	}
 }

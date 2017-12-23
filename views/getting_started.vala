@@ -72,7 +72,7 @@ namespace Koto {
 			progress.pulse(); // Pulse back and forth until we get a list
 			progress.show_all(); // Show the progress var
 
-			var music_indexer = new Koto.Indexer("dir", kotoio.music_dir); // Create a dir-type indexer for our XDG music directory
+			var music_indexer = new Koto.Indexer("dir", Koto.music_dir); // Create a dir-type indexer for our XDG music directory
 
 			music_indexer.done.connect(() => { // Connect to the done signal
 				stdout.printf("Indexing complete.\n");

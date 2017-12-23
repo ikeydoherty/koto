@@ -29,7 +29,7 @@ files = files(
 	'data/artist.vala',
 	'data/indexer.vala',
 	'data/db.vala',
-	'data/io.vala',
+	'data/metadata.vala',
 	'views/devices.vala',
 	'views/getting_started.vala',
 	'views/library_grid.vala',
