@@ -13,6 +13,8 @@ namespace Koto {
 			album_info = create_album_info(); // Create our album info
 
 			if (_album.artwork_uri != "") { // If we have album artwork
+				_album.artwork_uri = Uri.unescape_string(_album.artwork_uri); // Unescape the URI if it hasn't been already
+
 				try {
 					Gdk.Pixbuf artwork_pixbuf = new Gdk.Pixbuf.from_file_at_scale(_album.artwork_uri, 200, 200, true); // Use a Gdk.Pixbuf so we can scale the image up / down depending on its size
 					Gtk.Image album_art = new Gtk.Image.from_pixbuf(artwork_pixbuf); // Create a new image based on our artwork pixbuf

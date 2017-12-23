@@ -11,6 +11,8 @@ namespace Koto {
 		}
 
 		public KotoTrackMetadata get_metadata(string filepath) {
+			var file_name = Path.get_basename(filepath); // At least treat the title as the display name;
+
 			TagLib.File file = new TagLib.File(filepath);
 			string artist = _("Unknown");
 			string album = _("Unknown");
@@ -27,7 +29,7 @@ namespace Koto {
 				length = (file.audioproperties != null) ? file.audioproperties.length : 0;
 				track = (int) file.tag.track;
 			} else { // If we failed to fetch id3 information
-				title = Path.get_basename(filepath); // At least treat the title as the display name
+				title = file_name;
 				int last_index_of_dot = title.last_index_of("."); // Get the last index
 				title = title.substring(0, last_index_of_dot);
 
@@ -59,6 +61,29 @@ namespace Koto {
 
 						track = int.parse(potential_artist); // Parse as an int and set to track
 					}
+				}
+			}
+
+			// Sort out audiobook formatting
+			if (genre == "Audiobook") { // If this is an audiobook
+				string chapter = "";
+
+				if (track == 0) { // If we failed to get any track / chapter info
+					int extension_index = file_name.last_index_of("."); // Get the last index of ., which should indicate extension name
+					string filepath_without_extension = file_name.slice(0, extension_index);
+					int chapter_index = filepath_without_extension.last_index_of("."); // Next get the potential chapter index, so if filepath was .88.mp3, this should be the . before 88 (since mp3 is stripped)
+					
+					if (chapter_index != -1) { // If there is a chapter defined
+						chapter = filepath_without_extension.substring(chapter_index + 1); // Start at the chapter index
+					} else {
+						chapter = "0"; // Set to 0, typically prologue
+					}
+				} else {
+					chapter = track.to_string(); // Convert track number to chapter
+				}
+
+				if (chapter != "") { // If chapter has been set
+					title += " - " + _("Chapter") +  " #%s".printf(chapter); // Attempt - Chapter #N
 				}
 			}
 

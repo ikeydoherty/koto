@@ -7,6 +7,7 @@ public class KotoList : Gtk.ScrolledWindow {
 
 	public KotoList(int? width) {
 		Object();
+		overlay_scrolling = true; // Enable overlay scrolling
 		hscrollbar_policy = Gtk.PolicyType.NEVER; // Never have a horizontal scrollbar
 		vscrollbar_policy = Gtk.PolicyType.AUTOMATIC; // Only appear when needed
 

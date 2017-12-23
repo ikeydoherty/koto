@@ -149,7 +149,7 @@ public class KotoDatabase : Object {
 
 						if (album_directory != null) {
 							foreach (string artwork_filename in acceptable_artwork_filenames) { // For each artwork filename in our acceptable list
-								File artwork_file = album_directory.get_child(artwork_filename); // Get the potential file
+								File artwork_file = album_directory.get_child(Uri.unescape_string(artwork_filename)); // Get the potential file
 
 								if (artwork_file.query_exists()) { // If the file exists
 									try {
@@ -170,7 +170,6 @@ public class KotoDatabase : Object {
 					}
 
 					if (artwork != "") { // If we found artwork
-						stdout.printf("Found artwork: %s\n", Uri.unescape_string(artwork));
 						string insert_artwork_query = @"INSERT INTO artwork (artist, album, art) VALUES('$escaped_artist', '$escaped_album', '$artwork')";
 						string err_msg;
 						int insert_err = db.exec(insert_artwork_query, null, out err_msg);
@@ -216,21 +215,6 @@ public class KotoDatabase : Object {
 
 			var track = new KotoTrack(rowData["id"], rowData["path"], track_num, rowData["genre"], rowData["title"]); // Create a new KotoTrack from our row data
 			data[artist].add_track(album, track); // Add this track to the album, even if doesn't exist
-		}
-
-		foreach (KotoArtist artist in data.values) { // For each artist
-			stdout.printf("Artist: %s\n", artist.name);
-
-			foreach (KotoAlbum album in artist.albums.values) { // For each album
-				stdout.printf("  Album: %s\n", album.name);
-
-				foreach (KotoTrack track in album.tracks.values) { // For each track
-					stdout.printf("    #%d: %s\n", track.num, track.title);
-					stdout.printf("      Genre: %s\n", track.genre);
-				}
-			}
-
-			stdout.printf("----\n");
 		}
 	}
 

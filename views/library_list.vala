@@ -10,10 +10,16 @@ namespace Koto {
 			vexpand = true;
 
 			artist_list = new KotoList(250); // Create a new KotoList for artists
+			Gtk.ScrolledWindow album_list_scrollwindow = new Gtk.ScrolledWindow(null, null); // Create a new scrolled window
+			album_list_scrollwindow.overlay_scrolling = true;
+			album_list_scrollwindow.hscrollbar_policy = Gtk.PolicyType.NEVER; // Never have a horizontal scrollbar
+			album_list_scrollwindow.vscrollbar_policy = Gtk.PolicyType.AUTOMATIC; // Only appear when needed
+
 			album_list = new Gtk.Box(Gtk.Orientation.VERTICAL, 15); // Create a new vertical list of albums
+			album_list_scrollwindow.add(album_list); // Add our album_list to the scrolled window
 
 			pack_start(artist_list, false, false, 0);
-			pack_start(album_list, false, true, 0);
+			pack_start(album_list_scrollwindow, false, true, 0);
 
 			if (Koto.kotodb.data.keys.size > 0) { // If there are items to load
 				refresh();
