@@ -13,6 +13,9 @@ namespace Koto {
 		public KotoTrackMetadata get_metadata(string filepath) {
 			var file_name = Path.get_basename(filepath); // At least treat the title as the display name;
 
+			int extension_index = file_name.last_index_of("."); // Get the last index of ., which should indicate extension name
+			string file_extension = file_name.substring(extension_index); // Get the extension of the file
+
 			TagLib.File file = new TagLib.File(filepath);
 			string artist = _("Unknown");
 			string album = _("Unknown");
@@ -29,9 +32,7 @@ namespace Koto {
 				length = (file.audioproperties != null) ? file.audioproperties.length : 0;
 				track = (int) file.tag.track;
 			} else { // If we failed to fetch id3 information
-				title = file_name;
-				int last_index_of_dot = title.last_index_of("."); // Get the last index
-				title = title.substring(0, last_index_of_dot);
+				title = file_name.replace(file_extension, ""); // Set title to file_name without the extension
 
 				if (title.index_of(" - ") != -1) { // If there might be some form of Artist - Song Name
 					var splitName = title.split(" - ", 2);
@@ -61,20 +62,39 @@ namespace Koto {
 
 						track = int.parse(potential_artist); // Parse as an int and set to track
 					}
+				} else {
+					string possible_artist_album_path = filepath.replace(music_dir + Path.DIR_SEPARATOR_S, ""); // Strip out the music XDG path
+					possible_artist_album_path = possible_artist_album_path.replace(Path.DIR_SEPARATOR_S + file_name, ""); // Strip out the file name
+	
+					string[] artist_album_array = possible_artist_album_path.split(Path.DIR_SEPARATOR_S); // Split based on the separator
+	
+					if (artist_album_array.length == 2) { // If there are two items
+						artist = artist_album_array[0];
+						album = artist_album_array[1];
+	
+						try {
+							Regex regex = new Regex("^([0-9]+)"); // Attempt a regex where we strip out any prefixed numbers
+							var potential_title = regex.replace(title, title.length, 0, "").strip(); // Replace the prefixed numbers and trim whitespace
+							string track_s = artist.replace(potential_title, "").strip(); // Do the inverse, strip out the likely title so we get the numbers, and trim
+	
+							title = potential_title;
+							track = int.parse(track_s);
+						} catch (RegexError err) {
+							stdout.printf("%s", err.message);
+						}
+					}
 				}
 			}
 
-			// Sort out audiobook formatting
-			if (genre == "Audiobook") { // If this is an audiobook
+			if (genre == "Audiobook") { // If this is an audiobook, sort out formatting
 				string chapter = "";
 
 				if (track == 0) { // If we failed to get any track / chapter info
-					int extension_index = file_name.last_index_of("."); // Get the last index of ., which should indicate extension name
-					string filepath_without_extension = file_name.slice(0, extension_index);
-					int chapter_index = filepath_without_extension.last_index_of("."); // Next get the potential chapter index, so if filepath was .88.mp3, this should be the . before 88 (since mp3 is stripped)
+					string filename_without_ext = file_name.replace(file_extension, "");
+					int chapter_index = filename_without_ext.last_index_of("."); // Next get the potential chapter index, so if filepath was .88.mp3, this should be the . before 88 (since mp3 is stripped)
 					
 					if (chapter_index != -1) { // If there is a chapter defined
-						chapter = filepath_without_extension.substring(chapter_index + 1); // Start at the chapter index
+						chapter = filename_without_ext.substring(chapter_index + 1); // Start at the chapter index
 					} else {
 						chapter = "0"; // Set to 0, typically prologue
 					}
