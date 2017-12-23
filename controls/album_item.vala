@@ -16,6 +16,8 @@ namespace Koto {
 				try {
 					Gdk.Pixbuf artwork_pixbuf = new Gdk.Pixbuf.from_file_at_scale(_album.artwork_uri, 200, 200, true); // Use a Gdk.Pixbuf so we can scale the image up / down depending on its size
 					Gtk.Image album_art = new Gtk.Image.from_pixbuf(artwork_pixbuf); // Create a new image based on our artwork pixbuf
+					album_art.valign = Gtk.Align.START; // Align to top of album item
+
 					pack_start(album_art, false, false, 0);
 				} catch (Error e) {
 					stdout.printf("Failed to create a pixbuf for %s: %s", _album.artwork_uri, e.message);
@@ -25,6 +27,7 @@ namespace Koto {
 			foreach (KotoTrack track in _album.tracks.values) { // For each track
 				Gtk.Label track_label = new Gtk.Label(track.title);
 				track_label.justify = Gtk.Justification.LEFT;
+				track_label.width_request = 150; // Set minimum width to 150
 				track_label.xalign = 0; // Align to left (or right for RTL)
 
 				track_list.insert(track_label, -1); // Add the track item

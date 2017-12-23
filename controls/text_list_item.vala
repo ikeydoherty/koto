@@ -4,14 +4,17 @@ public class KotoTextListItem : Gtk.ListBoxRow {
 	private Gtk.Label _label;
 	private string _text;
 
-	public KotoTextListItem(string text) {
+	public KotoTextListItem(string list_text) {
 		Object();
+		string text = list_text.strip(); // Strip leading and trailing whitespace
+
 		height_request = 40;
 		_label = new Gtk.Label(text);
 		_label.ellipsize = Pango.EllipsizeMode.END;
 		_label.halign = Gtk.Align.START; // Align horizontally to the start of the item (left for LTR)
 		_label.justify = Gtk.Justification.LEFT;
 		_label.max_width_chars = 280; // Keey it at a maximum of 280px
+		_label.xalign = 0; // Align to start (left for LTR, right for RTL)
 		_label.xpad = 20; // 20px horizontal padding
 		_text = text;
 
