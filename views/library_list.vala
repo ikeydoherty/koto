@@ -19,7 +19,7 @@ namespace Koto {
 			album_list_scrollwindow.add(album_list); // Add our album_list to the scrolled window
 
 			pack_start(artist_list, false, false, 0);
-			pack_start(album_list_scrollwindow, false, true, 0);
+			pack_start(album_list_scrollwindow, true, true, 0);
 
 			if (Koto.kotodb.data.keys.size > 0) { // If there are items to load
 				refresh();

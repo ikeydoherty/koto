@@ -83,7 +83,7 @@ namespace Koto {
 				}
 
 				if (chapter != "") { // If chapter has been set
-					title += " - " + _("Chapter") +  " #%s".printf(chapter); // Attempt - Chapter #N
+					title = _("Chapter %s").printf(chapter); // Change title to Chapter N
 				}
 			}
 

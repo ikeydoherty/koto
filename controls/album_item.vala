@@ -33,6 +33,7 @@ namespace Koto {
 				track_label.xalign = 0; // Align to left (or right for RTL)
 
 				track_list.insert(track_label, -1); // Add the track item
+				track_list.invalidate_sort(); // Sort our tracks
 			}
 
 			pack_start(album_info, false, true, 0);
@@ -71,6 +72,21 @@ namespace Koto {
 			// Have some spacing in between tracks
 			track_list.column_spacing = 5;
 			track_list.row_spacing = 5;
+
+			// Sort our files
+			track_list.set_sort_func((first_child, second_child) => { // Alphabetize items
+				string first_child_text = ((Gtk.Label) first_child.get_child()).label;
+				string second_child_text = ((Gtk.Label) second_child.get_child()).label;
+
+				if (first_child_text.has_prefix(_("Chapter"))) { // If this is an audiobook, has the string Chapter, do some special comparison because strcmp isn't good with numbers
+					int first_chapter_num = int.parse(first_child_text.replace(_("Chapter") + " ", "")); // Strip out Chapter # (or the locale string) for the first chapter
+					int second_chapter_num = int.parse(second_child_text.replace(_("Chapter") + " ", "")); // Strip out Chapter # (or the locale string) for the second chapter
+
+					return (first_chapter_num <= second_chapter_num) ? -1 : 1; // If the first chapter is a lower number than the second chapter, place it first
+				} else {
+					return (GLib.strcmp(first_child_text, second_child_text) <= 0) ? -1 : 1;
+				}
+			});
 
 			album_info_box.pack_start(track_list, false, true, 0); // Add track list
 
