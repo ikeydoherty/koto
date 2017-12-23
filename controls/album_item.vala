@@ -46,6 +46,7 @@ namespace Koto {
 			album_name_label.attributes = album_name_attrs;
 
 			Gtk.Label tracks_count = new Gtk.Label(_("Tracks (%s)").printf(_album.tracks.size.to_string()));
+			tracks_count.get_style_context().add_class("dim-label");
 			tracks_count.justify = Gtk.Justification.LEFT;
 			tracks_count.margin_bottom = 5; // Have some space between track count and list
 			tracks_count.xalign = 0; // Align to left (or right for RTL)
