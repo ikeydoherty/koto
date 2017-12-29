@@ -7,7 +7,7 @@ namespace Koto {
 	public class KotoApp : Gtk.Window {
 		public KotoHeaderBar header;
 		public KotoMenuPopover menu_popover;
-		public KotoPlayerBar playerbar;
+		public PlayerBar playerbar;
 
 		public Gtk.Box global_container;
 		public Gtk.Box main_container;
@@ -60,7 +60,7 @@ namespace Koto {
 
 			header = new KotoHeaderBar(); // Create our Headerbar
 			menu_popover = new KotoMenuPopover(); // Create our Menu Popover
-			playerbar = new Koto.KotoPlayerBar(); // Create our Playerbar
+			playerbar = new Koto.PlayerBar(); // Create our Playerbar
 
 			global_container = new Gtk.Box(Gtk.Orientation.VERTICAL, 0);
 			main_container = new Gtk.Box(Gtk.Orientation.HORIZONTAL, 0);

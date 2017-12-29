@@ -3,7 +3,8 @@
 namespace Koto {
 	public class PlaybackEngine {
 		private string _file_uri; // Our file URI
-		private Gst.Element source;
+		public Gee.ArrayList<KotoTrack> playlist; // A list of KotoTracks to play
+		public Gst.Element source;
 
 		public PlaybackEngine(string? e_file_uri) {
 			if (e_file_uri != null) {
@@ -52,9 +53,9 @@ namespace Koto {
 
 				if (state_change == Gst.StateChangeReturn.FAILURE) {
 					stdout.printf("Failed to start playing audio.\n");
+				} else { // If we successfully started playback
+					Koto.app.playerbar.Enable(); // Enable our playerbar
 				}
-			} else {
-				stdout.printf("Source is null.\n");
 			}
 		}
 

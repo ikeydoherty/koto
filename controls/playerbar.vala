@@ -1,23 +1,26 @@
 // This file contains the code related to the playback controls
 
 namespace Koto {
-	public class KotoPlayerBar : Gtk.Box {
+	public class PlayerBar : Gtk.Box {
+		private bool _enabled;
+
 		// Left Side Controls
-		public Gtk.Button backward;
-		public Gtk.Button playpause;
-		public Gtk.Button forward;
+		public KotoFlatIconButton backward;
+		public KotoFlatIconButton playpause;
+		public KotoFlatIconButton forward;
 
 		// Middle Controls
 		public Gtk.Scale progressbar;
 
 		// Right Side Controls
-		public Gtk.Button repeat;
-		public Gtk.Button shuffle;
-		public Gtk.Button playlist;
+		public KotoFlatIconButton repeat;
+		public KotoFlatIconButton shuffle;
+		public KotoFlatIconButton playlist;
 		public Gtk.VolumeButton volume; 
 
-		public KotoPlayerBar() {
+		public PlayerBar() {
 			Object(orientation: Gtk.Orientation.HORIZONTAL);
+			_enabled = false; // Default to PlayerBar not being enabled
 
 			// Have the playerbar look the same as the CSD / titlebar
 			get_style_context().add_class("csd");
@@ -64,24 +67,44 @@ namespace Koto {
 			pack_start(left_controls, false, false, 0); // Add Left Controls
 			pack_start(middle_controls, true, true, 0); // Add Middle Controls and ensure it sits in center
 			pack_start(right_controls, false, false, 0); // Add Right Controls
+
+			// Add event listeners
+			playpause.clicked.connect(TogglePlayback);
+		}
+
+		// enabled will return if the PlayerBar is enabled
+		public bool enabled {
+			get { return _enabled; }
 		}
 
 		// Enable the PlayerBar
 		public void Enable() {
-			foreach (Gtk.Widget widget in get_children()){
-				widget.sensitive = true;
+			if (!enabled) { // If the PlayerBar is not already enabled
+				_enabled = true;
+
+				foreach (Gtk.Widget widget in get_children()){
+					widget.sensitive = true;
+				}
 			}
 		}
 
 		// Disable the PlayerBar
 		public void Disable() {
+			_enabled = false;
+
 			foreach (Gtk.Widget widget in get_children()){
 				widget.sensitive = false;
 			}
 		}
 
 		public void TogglePlayback() {
-			
+			if (Koto.playback.get_is_playing()) { // If we are playing media
+				Koto.playback.pause(); // Pause media
+				playpause.set_icon("media-playback-pause-symbolic"); // Change icon to pause
+			} else {
+				Koto.playback.play(); // Play media (if possible)
+				playpause.set_icon("media-playback-start-symbolic"); // Change icon to play
+			}
 		}
 	}
 }
