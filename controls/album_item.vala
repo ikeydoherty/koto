@@ -25,12 +25,9 @@ namespace Koto {
 			}
 
 			foreach (KotoTrack track in album.tracks.values) { // For each track
-				Gtk.Label track_label = new Gtk.Label(track.title);
-				track_label.justify = Gtk.Justification.LEFT;
-				track_label.width_request = 150; // Set minimum width to 150
-				track_label.xalign = 0; // Align to left (or right for RTL)
+				Koto.TrackItem track_item = new Koto.TrackItem(track); // Create a new track item
 
-				track_list.insert(track_label, -1); // Add the track item
+				track_list.insert(track_item, -1); // Add the track item
 				track_list.invalidate_sort(); // Sort our tracks
 			}
 
@@ -69,6 +66,8 @@ namespace Koto {
 			album_info_box.pack_start(tracks_count, false, true, 0); // Add the tracks count label
 
 			track_list = new Gtk.FlowBox();
+			track_list.activate_on_single_click = false; // Require double-click to activate item
+			track_list.child_activated.connect(track_item_click);
 			track_list.homogeneous = false; // Allow items to have different width
 			track_list.selection_mode = Gtk.SelectionMode.SINGLE;
 			track_list.min_children_per_line = 2; // At least have a side-by-side list
@@ -78,23 +77,35 @@ namespace Koto {
 			track_list.row_spacing = 5;
 
 			// Sort our files
-			track_list.set_sort_func((first_child, second_child) => { // Alphabetize items
-				string first_child_text = ((Gtk.Label) first_child.get_child()).label;
-				string second_child_text = ((Gtk.Label) second_child.get_child()).label;
-
-				if (first_child_text.has_prefix(_("Chapter"))) { // If this is an audiobook, has the string Chapter, do some special comparison because strcmp isn't good with numbers
-					int first_chapter_num = int.parse(first_child_text.replace(_("Chapter") + " ", "")); // Strip out Chapter # (or the locale string) for the first chapter
-					int second_chapter_num = int.parse(second_child_text.replace(_("Chapter") + " ", "")); // Strip out Chapter # (or the locale string) for the second chapter
-
-					return (first_chapter_num <= second_chapter_num) ? -1 : 1; // If the first chapter is a lower number than the second chapter, place it first
-				} else {
-					return (GLib.strcmp(first_child_text, second_child_text) <= 0) ? -1 : 1;
-				}
-			});
+			track_list.set_sort_func(track_items_sort);
 
 			album_info_box.pack_start(track_list, false, true, 0); // Add track list
 
 			return album_info_box;
+		}
+
+		// track_item_click will handle the clicking of an item
+		public void track_item_click(Gtk.FlowBoxChild item) {
+			KotoTrack track = ((Koto.TrackItem) item.get_child()).track; // Get the cooresponding track to a TrackItem
+			Koto.playback.file_uri = track.path; // Set the playback file URI
+			Koto.playback.load_file_uri();
+			Koto.playback.play(); // Start playing
+			return;
+		}
+
+		// track_items_sort is responsible for sorting between two children
+		private int track_items_sort(Gtk.FlowBoxChild first_child, Gtk.FlowBoxChild second_child) {
+			string first_child_text = ((Koto.TrackItem) first_child.get_child()).track.title;
+			string second_child_text = ((Koto.TrackItem) second_child.get_child()).track.title;
+
+			if (first_child_text.has_prefix(_("Chapter"))) { // If this is an audiobook, has the string Chapter, do some special comparison because strcmp isn't good with numbers
+				int first_chapter_num = int.parse(first_child_text.replace(_("Chapter") + " ", "")); // Strip out Chapter # (or the locale string) for the first chapter
+				int second_chapter_num = int.parse(second_child_text.replace(_("Chapter") + " ", "")); // Strip out Chapter # (or the locale string) for the second chapter
+
+				return (first_chapter_num <= second_chapter_num) ? -1 : 1; // If the first chapter is a lower number than the second chapter, place it first
+			} else {
+				return (GLib.strcmp(first_child_text, second_child_text) <= 0) ? -1 : 1;
+			}
 		}
 	}
 }

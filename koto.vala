@@ -1,6 +1,7 @@
 namespace Koto {
 	public KotoApp app;
 	public KotoDatabase kotodb;
+	public PlaybackEngine playback;
 	public string music_dir; // User Music Directory
 
 	public class KotoApp : Gtk.Window {
@@ -26,6 +27,14 @@ namespace Koto {
 			}
 
 			Gtk.init(ref args);
+
+			try {
+				Gst.init_check(ref args);
+				playback = new Koto.PlaybackEngine(null);
+			} catch (Error e) {
+				stdout.printf("Failed to initialize gstreamer: %s\n", e.message);
+			}
+
 			app = new KotoApp();
 			Gtk.main();
 			return 0;
@@ -51,7 +60,7 @@ namespace Koto {
 
 			header = new KotoHeaderBar(); // Create our Headerbar
 			menu_popover = new KotoMenuPopover(); // Create our Menu Popover
-			playerbar = new KotoPlayerBar(); // Create our Playerbar
+			playerbar = new Koto.KotoPlayerBar(); // Create our Playerbar
 
 			global_container = new Gtk.Box(Gtk.Orientation.VERTICAL, 0);
 			main_container = new Gtk.Box(Gtk.Orientation.HORIZONTAL, 0);
