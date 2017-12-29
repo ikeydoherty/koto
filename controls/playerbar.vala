@@ -69,7 +69,8 @@ namespace Koto {
 			pack_start(right_controls, false, false, 0); // Add Right Controls
 
 			// Add event listeners
-			playpause.clicked.connect(TogglePlayback);
+			playpause.clicked.connect(toggle_playback);
+			volume.value_changed.connect(change_volume);
 		}
 
 		// enabled will return if the PlayerBar is enabled
@@ -78,7 +79,7 @@ namespace Koto {
 		}
 
 		// Enable the PlayerBar
-		public void Enable() {
+		public void enable() {
 			if (!enabled) { // If the PlayerBar is not already enabled
 				_enabled = true;
 
@@ -89,7 +90,7 @@ namespace Koto {
 		}
 
 		// Disable the PlayerBar
-		public void Disable() {
+		public void disable() {
 			_enabled = false;
 
 			foreach (Gtk.Widget widget in get_children()){
@@ -97,7 +98,13 @@ namespace Koto {
 			}
 		}
 
-		public void TogglePlayback() {
+		// change_volume will handle the value change on our VolumeButton scale
+		public void change_volume(double volume) {
+			Koto.playback.player.mute = (volume == 0);
+			Koto.playback.player.volume = volume;
+		}
+
+		public void toggle_playback() {
 			if (Koto.playback.playing) { // If we are playing media
 				Koto.playback.pause(); // Pause media
 				playpause.set_icon("media-playback-pause-symbolic"); // Change icon to pause

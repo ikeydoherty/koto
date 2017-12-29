@@ -78,7 +78,7 @@ namespace Koto {
 
 			destroy.connect(method_destroy);
 
-			playerbar.Disable(); // Disable until we start playback
+			playerbar.disable(); // Disable until we start playback
 
 			if (kotodb.is_first_run) { // If this is our first run
 				getting_started = new KotoGettingStartedView(); // Create the Getting Started view

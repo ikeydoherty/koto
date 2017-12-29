@@ -43,7 +43,8 @@ namespace Koto {
 		public void play() {
 			_playing = true;
 			player.play(); // Play file
-			Koto.app.playerbar.Enable(); // Enable our playerbar
+			Koto.app.playerbar.enable(); // Enable our playerbar (if it isn't enabled already)
+			Koto.app.playerbar.volume.value = player.volume; // Set the VolumeButton scale value to the player volume
 		}
 
 		// Pause playback of current source
