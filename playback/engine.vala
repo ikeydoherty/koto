@@ -2,11 +2,14 @@
 
 namespace Koto {
 	public class PlaybackEngine {
+		private bool _playing; // Playback is occurring
 		private string _file_uri; // Our file URI
 		public Gee.ArrayList<KotoTrack> playlist; // A list of KotoTracks to play
-		public Gst.Element source;
+		public Gst.Player player;
 
 		public PlaybackEngine(string? e_file_uri) {
+			player = new Gst.Player(null, null); // Create a new player
+
 			if (e_file_uri != null) {
 				file_uri = e_file_uri;
 				load_file_uri();
@@ -25,49 +28,28 @@ namespace Koto {
 			}
 		}
 
-		public bool get_is_playing() {
-			Gst.State current_state;
-			source.get_state(out current_state, null, Gst.CLOCK_TIME_NONE);
-
-			return current_state == Gst.State.PLAYING;
+		public bool playing {
+			get { return _playing; }
 		}
 
 		// load_file_uri will load our file URI 
 		public void load_file_uri() {
 			if (_file_uri != "") { // If we have a file_uri set
-				if (source != null) { // If source is already set
-					source.set_state(Gst.State.NULL);
-				}
-
-				source = Gst.ElementFactory.make("playbin", "source");
-				source.set("uri", file_uri);
-			} else {
-				stdout.printf("No file_uri set during load_file_uri call.\n");
+				player.uri = _file_uri; // Change our player uri
 			}
 		}
 
 		// Start playback of the current source
 		public void play() {
-			if (source != null) {
-				Gst.StateChangeReturn state_change = source.set_state(Gst.State.PLAYING);
-
-				if (state_change == Gst.StateChangeReturn.FAILURE) {
-					stdout.printf("Failed to start playing audio.\n");
-				} else { // If we successfully started playback
-					Koto.app.playerbar.Enable(); // Enable our playerbar
-				}
-			}
+			_playing = true;
+			player.play(); // Play file
+			Koto.app.playerbar.Enable(); // Enable our playerbar
 		}
 
 		// Pause playback of current source
 		public void pause() {
-			if (source != null) {
-				Gst.StateChangeReturn state_change = source.set_state(Gst.State.PAUSED);
-
-				if (state_change == Gst.StateChangeReturn.FAILURE) {
-					stdout.printf("Failed to pause audio.\n");
-				}
-			}
+			_playing = false;
+			player.pause(); // Pause playback
 		}
 	} 
 }

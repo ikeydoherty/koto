@@ -6,6 +6,7 @@ gdk_dep = dependency('gdk-3.0', version: '>=3.22.26')
 glib_dep = dependency('glib-2.0')
 gobject_dep = dependency('gobject-2.0')
 gst_dep = dependency('gstreamer-1.0', version: '>=1.12.0')
+gst_player_dep = dependency('gstreamer-player-1.0', version: '>=1.12.0')
 gtk_dep = dependency('gtk+-3.0', version: '>=3.22.26')
 pango_dep = dependency('pango', version: '>=1.40.0')
 sqlite_dep = dependency('sqlite3', version: '>=3.20.0')
@@ -43,6 +44,17 @@ files = files(
 executable(
 	'koto',
 	files,
-	dependencies: [gee_dep, gdk_dep, glib_dep, gobject_dep, gst_dep, gtk_dep, pango_dep, sqlite_dep, taglib_dep],
+	dependencies: [
+		gee_dep,
+		gdk_dep,
+		glib_dep,
+		gobject_dep,
+		gst_dep,
+		gst_player_dep,
+		gtk_dep,
+		pango_dep,
+		sqlite_dep,
+		taglib_dep
+	],
 	link_args: '-lm'
 )

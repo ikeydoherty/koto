@@ -98,7 +98,7 @@ namespace Koto {
 		}
 
 		public void TogglePlayback() {
-			if (Koto.playback.get_is_playing()) { // If we are playing media
+			if (Koto.playback.playing) { // If we are playing media
 				Koto.playback.pause(); // Pause media
 				playpause.set_icon("media-playback-pause-symbolic"); // Change icon to pause
 			} else {
