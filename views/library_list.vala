@@ -31,13 +31,28 @@ namespace Koto {
 		// on_artist_click will handle when we click on an item in the artist list
 		public void on_artist_click(KotoTextListItem item) {
 			string artist = item.text;
+			Gee.HashMap<string,KotoAlbum> albums = Koto.kotodb.data.get(artist).albums;
+
 			album_list.hide(); // Hide the album list
 
 			foreach (var album_list_item in album_list.get_children()) { // For each child
 				album_list_item.destroy();
 			}
 
-			foreach (KotoAlbum album in Koto.kotodb.data[artist].albums.values) {
+			Gee.ArrayList<string> sorted_album_list = new Gee.ArrayList<string>(null); // Create a new Gee.List of strings so we can sort the albums
+
+			foreach (KotoAlbum album in albums.values) { // For each album in albums
+				sorted_album_list.add(album.name); // Add the album name
+			}
+
+			if (albums.size > 1) { // If there is more than one album, make sure we perform a sort
+				sorted_album_list.sort((album_one, album_two) => {
+					return (strcmp(album_one, album_two) <= 0) ? -1 : 1;
+				});
+			}
+
+			foreach (string album_name in sorted_album_list) { // For each album in our sorted album list
+				KotoAlbum album = albums.get(album_name);
 				KotoAlbumItem album_item = new KotoAlbumItem(album); // Create a new album item
 				album_list.pack_start(album_item, false, true, 0); // Add item
 			}

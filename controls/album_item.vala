@@ -2,29 +2,29 @@
 
 namespace Koto {
 	public class KotoAlbumItem : Gtk.Box {
-		private KotoAlbum _album;
+		public KotoAlbum album;
 		public Gtk.Box album_info; // album_info contains the album name, track link, track grid
 		public Gtk.FlowBox track_list;
 
-		public KotoAlbumItem(KotoAlbum album) {
+		public KotoAlbumItem(KotoAlbum a_album) {
 			Object(orientation: Gtk.Orientation.HORIZONTAL, spacing: 15); // Orient horizontally
 			margin = 30;
-			_album = album;
+			album = a_album;
 			album_info = create_album_info(); // Create our album info
 
-			if (_album.artwork_uri != "") { // If we have album artwork
+			if (album.artwork_uri != "") { // If we have album artwork
 				try {
-					Gdk.Pixbuf artwork_pixbuf = new Gdk.Pixbuf.from_file_at_scale(_album.artwork_uri, 200, 200, true); // Use a Gdk.Pixbuf so we can scale the image up / down depending on its size
+					Gdk.Pixbuf artwork_pixbuf = new Gdk.Pixbuf.from_file_at_scale(album.artwork_uri, 200, 200, true); // Use a Gdk.Pixbuf so we can scale the image up / down depending on its size
 					Gtk.Image album_art = new Gtk.Image.from_pixbuf(artwork_pixbuf); // Create a new image based on our artwork pixbuf
 					album_art.valign = Gtk.Align.START; // Align to top of album item
 
 					pack_start(album_art, false, false, 0);
 				} catch (Error e) {
-					stdout.printf("Failed to create a pixbuf for %s: %s", _album.artwork_uri, e.message);
+					stdout.printf("Failed to create a pixbuf for %s: %s", album.artwork_uri, e.message);
 				}
 			}
 
-			foreach (KotoTrack track in _album.tracks.values) { // For each track
+			foreach (KotoTrack track in album.tracks.values) { // For each track
 				Gtk.Label track_label = new Gtk.Label(track.title);
 				track_label.justify = Gtk.Justification.LEFT;
 				track_label.width_request = 150; // Set minimum width to 150
@@ -41,7 +41,7 @@ namespace Koto {
 		private Gtk.Box create_album_info() {
 			var album_info_box = new Gtk.Box(Gtk.Orientation.VERTICAL, 0); // Create a new vertically oriented box
 
-			Gtk.Label album_name_label = new Gtk.Label(_album.name);
+			Gtk.Label album_name_label = new Gtk.Label(album.name);
 			album_name_label.justify = Gtk.Justification.LEFT;
 			album_name_label.xalign = 0; // Align to left (or right for RTL)
 
@@ -51,11 +51,11 @@ namespace Koto {
 
 			var tracks_count_str = _("Tracks (%s)"); // Default to tracks count being Tracks (num)
 
-			if (_album.genres.contains("Audiobook")) { // If this is an Audiobook
+			if (album.genres.contains("Audiobook")) { // If this is an Audiobook
 				tracks_count_str = _("Chapters (%s)");
 			}
 
-			Gtk.Label tracks_count = new Gtk.Label(tracks_count_str.printf(_album.tracks.size.to_string()));
+			Gtk.Label tracks_count = new Gtk.Label(tracks_count_str.printf(album.tracks.size.to_string()));
 			tracks_count.get_style_context().add_class("dim-label");
 			tracks_count.justify = Gtk.Justification.LEFT;
 			tracks_count.margin_bottom = 5; // Have some space between track count and list
