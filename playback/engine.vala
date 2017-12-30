@@ -18,6 +18,7 @@ namespace Koto {
 			}
 
 			player.duration_changed.connect(on_duration_change); // On duration change, trigger on_duration_change
+			player.end_of_stream.connect(on_file_end); // On end_of_stream, trigger on_file_end
 			player.uri_loaded.connect(on_file_load); // On media_info_updated, trigger update_current_track
 			player.position_updated.connect(on_update_track_position); // On position_updated, trigger update_track_position
 		}
@@ -60,6 +61,11 @@ namespace Koto {
 			Koto.app.playerbar.progressbar.set_value(current_position); // Set the current position
 		}
 
+		// on_file_end handles when we have reached the end of the file stream
+		public void on_file_end() {
+			Koto.app.playerbar.playpause.set_icon("media-playback-stop-symbolic"); // Set to the stop icon
+		}
+
 		// on_update_track_position is responsible for updating the current track position
 		public void on_update_track_position(uint64 pos) {
 			if (!Koto.app.playerbar.user_seeking) { // If we're allowed to update the progress bar
@@ -84,7 +90,9 @@ namespace Koto {
 		public void play() {
 			_playing = true;
 			player.play(); // Play file
+
 			Koto.app.playerbar.enable(); // Enable our playerbar (if it isn't enabled already)
+			Koto.app.playerbar.playpause.set_icon("media-playback-start-symbolic"); // Set to the stop icon
 			Koto.app.playerbar.volume.value = player.volume; // Set the VolumeButton scale value to the player volume
 		}
 
