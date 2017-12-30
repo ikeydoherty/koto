@@ -3,6 +3,7 @@
 namespace Koto {
 	public class PlayerBar : Gtk.Box {
 		private bool _enabled;
+		private bool _user_seeking;
 
 		// Left Side Controls
 		public KotoFlatIconButton backward;
@@ -21,6 +22,7 @@ namespace Koto {
 		public PlayerBar() {
 			Object(orientation: Gtk.Orientation.HORIZONTAL);
 			_enabled = false; // Default to PlayerBar not being enabled
+			_user_seeking = false; // D efault to allowing progressbar updating
 
 			// Have the playerbar look the same as the CSD / titlebar
 			get_style_context().add_class("csd");
@@ -34,6 +36,7 @@ namespace Koto {
 			progressbar = new Gtk.Scale.with_range(Gtk.Orientation.HORIZONTAL, 0, 120, 1); // Default to a GTK Scale with a minimum of zero and max of 120, with increments of 1. This will be changed on media load
 			progressbar.set_draw_value(false); // Don't draw the value next to the bar
 			progressbar.set_digits(0); // Default to 0
+			progressbar.set_increments(1,1);
 
 			repeat = new KotoFlatIconButton("media-playlist-repeat-symbolic", Gtk.IconSize.SMALL_TOOLBAR);
 			shuffle = new KotoFlatIconButton("media-playlist-shuffle-symbolic", Gtk.IconSize.SMALL_TOOLBAR);
@@ -69,13 +72,21 @@ namespace Koto {
 			pack_start(right_controls, false, false, 0); // Add Right Controls
 
 			// Add event listeners
-			playpause.clicked.connect(toggle_playback);
-			volume.value_changed.connect(change_volume);
+			playpause.clicked.connect(on_toggle_playback);
+			progressbar.button_press_event.connect(on_progressbar_press);
+			progressbar.button_release_event.connect(on_progressbar_release);
+			progressbar.value_changed.connect(on_progressbar_move);
+			volume.value_changed.connect(on_change_volume);
 		}
 
 		// enabled will return if the PlayerBar is enabled
 		public bool enabled {
 			get { return _enabled; }
+		}
+
+		// user_seeking will return if the PlayerBar progressbar is currently being seeked by the user
+		public bool user_seeking {
+			get { return _user_seeking; }
 		}
 
 		// Enable the PlayerBar
@@ -98,13 +109,35 @@ namespace Koto {
 			}
 		}
 
-		// change_volume will handle the value change on our VolumeButton scale
-		public void change_volume(double volume) {
+		// on_change_volume will handle the value change on our VolumeButton scale
+		public void on_change_volume(double volume) {
 			Koto.playback.player.mute = (volume == 0);
 			Koto.playback.player.volume = volume;
 		}
 
-		public void toggle_playback() {
+		// on_progressbar_move will handle the changing of the progressbar value
+		public void on_progressbar_move() {
+			if (_user_seeking) { // If the Playback Engine has been instructed not to update the value, meaning this is a user change
+				var new_value = Math.floor(progressbar.get_value());
+				Koto.playback.player.seek(((uint64) new_value * 1000000000)); // Seek to the new position, which is the number of seconds in the new_value * nanoseconds
+			}
+		}
+
+		// on_progressbar_press will handle our press event
+		public bool on_progressbar_press(Gdk.EventButton e) {
+			_user_seeking = true; // Should not allow updating by Playback Engine
+
+			return false;
+		}
+
+		// on_progressbar_release will handle our release event
+		public bool on_progressbar_release(Gdk.EventButton e) {
+			_user_seeking = false; // Should allow updating by Playback Engine
+
+			return false;
+		}
+
+		public void on_toggle_playback() {
 			if (Koto.playback.playing) { // If we are playing media
 				Koto.playback.pause(); // Pause media
 				playpause.set_icon("media-playback-pause-symbolic"); // Change icon to pause

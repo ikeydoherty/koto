@@ -87,8 +87,8 @@ namespace Koto {
 		// track_item_click will handle the clicking of an item
 		public void track_item_click(Gtk.FlowBoxChild item) {
 			KotoTrack track = ((Koto.TrackItem) item.get_child()).track; // Get the cooresponding track to a TrackItem
-			Koto.playback.file_uri = track.path; // Set the playback file URI
-			Koto.playback.load_file_uri();
+			Koto.playback.track = track; // Change the track
+			Koto.playback.load_file(track); // Load the track's file
 			Koto.playback.play(); // Start playing
 			return;
 		}
