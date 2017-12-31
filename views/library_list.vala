@@ -39,7 +39,7 @@ namespace Koto {
 				album_list_item.destroy();
 			}
 
-			Gee.ArrayList<string> sorted_album_list = new Gee.ArrayList<string>(null); // Create a new Gee.List of strings so we can sort the albums
+			Gee.ConcurrentList<string> sorted_album_list = new Gee.ConcurrentList<string>(null); // Create a new Gee.List of strings so we can sort the albums
 
 			foreach (KotoAlbum album in albums.values) { // For each album in albums
 				sorted_album_list.add(album.name); // Add the album name
@@ -53,7 +53,7 @@ namespace Koto {
 
 			foreach (string album_name in sorted_album_list) { // For each album in our sorted album list
 				KotoAlbum album = albums.get(album_name);
-				KotoAlbumItem album_item = new KotoAlbumItem(album); // Create a new album item
+				AlbumItem album_item = new AlbumItem(album); // Create a new album item
 				album_list.pack_start(album_item, false, true, 0); // Add item
 			}
 

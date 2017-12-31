@@ -28,19 +28,12 @@ namespace Koto {
 
 			Gtk.init(ref args);
 
-			try {
-				Gst.init_check(ref args);
-				playback = new Koto.PlaybackEngine(null);
-			} catch (Error e) {
-				stdout.printf("Failed to initialize gstreamer: %s\n", e.message);
-			}
-
-			app = new KotoApp();
+			app = new KotoApp(args);
 			Gtk.main();
 			return 0;
 		}
 
-		public KotoApp() {
+		public KotoApp(string[] args) {
 			Object(
 				icon_name: "audio-headphones", // Use audio-headphones for now
 				startup_id: "koto",
@@ -48,6 +41,17 @@ namespace Koto {
 				type: Gtk.WindowType.TOPLEVEL,
 				window_position: Gtk.WindowPosition.CENTER
 			);
+
+			try {
+				bool success = Gst.init_check(ref args);
+				if (success) {
+					playback = new Koto.PlaybackEngine();
+				} else {
+					stdout.printf("Unable to initialize gstreamer.\n");
+				}
+			} catch (Error e) {
+				stdout.printf("Failed to initialize gstreamer: %s\n", e.message);
+			}
 
 			music_dir = Environment.get_user_special_dir(UserDirectory.MUSIC); // Get the user's Music directory, using XDG special user directories
 			kotodb = new KotoDatabase(); // Create a new database

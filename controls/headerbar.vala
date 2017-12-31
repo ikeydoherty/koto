@@ -1,8 +1,8 @@
 namespace Koto {
 	// KotoHeaderBar is our custom HeaderBar control
 	public class KotoHeaderBar : Gtk.HeaderBar {
-		private KotoFlatIconButton menu_button;
-		public KotoFlatIconButton toggle_view_button;
+		private FlatIconButton menu_button;
+		public FlatIconButton toggle_view_button;
 
 		public KotoHeaderBar() {
 			// Set HeaderBar attributes
@@ -11,8 +11,8 @@ namespace Koto {
 			show_close_button = true;
 
 			// Create HeaderBar Objects
-			menu_button = new KotoFlatIconButton("audio-headphones-symbolic", Gtk.IconSize.MENU); // Create our Menu button. Temporarily use audio-headphones-symbolic as the logo
-			toggle_view_button = new KotoFlatIconButton("view-list-symbolic", Gtk.IconSize.MENU); // Create our toggle-view button
+			menu_button = new FlatIconButton("audio-headphones-symbolic", Gtk.IconSize.MENU); // Create our Menu button. Temporarily use audio-headphones-symbolic as the logo
+			toggle_view_button = new FlatIconButton("view-list-symbolic", Gtk.IconSize.MENU); // Create our toggle-view button
 			toggle_view_button.tooltip_text = _("List View");
 			pack_start(menu_button);
 			pack_end(toggle_view_button);

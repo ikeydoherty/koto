@@ -2,6 +2,6 @@
 
 mkdir -p buildDir
 pushd buildDir
-meson ..
+meson --buildtype debug ..
 ninja
 popd

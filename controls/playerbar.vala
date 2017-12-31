@@ -3,20 +3,21 @@
 namespace Koto {
 	public class PlayerBar : Gtk.Box {
 		private bool _enabled;
+		private bool _is_playing;
 		private bool _user_seeking;
 
 		// Left Side Controls
-		public KotoFlatIconButton backward;
-		public KotoFlatIconButton playpause;
-		public KotoFlatIconButton forward;
+		public FlatIconButton backward;
+		public FlatIconButton playpause;
+		public FlatIconButton forward;
 
 		// Middle Controls
 		public Gtk.Scale progressbar;
 
 		// Right Side Controls
-		public KotoFlatIconButton repeat;
-		public KotoFlatIconButton shuffle;
-		public KotoFlatIconButton playlist;
+		public FlatIconButton repeat;
+		public FlatIconButton shuffle;
+		public FlatIconButton playlist;
 		public Gtk.VolumeButton volume; 
 
 		public PlayerBar() {
@@ -29,25 +30,25 @@ namespace Koto {
 			get_style_context().add_class("titlebar");
 
 			// Create all our controls
-			backward = new KotoFlatIconButton("media-skip-backward-symbolic", Gtk.IconSize.SMALL_TOOLBAR);
-			playpause = new KotoFlatIconButton("media-playback-start-symbolic", Gtk.IconSize.SMALL_TOOLBAR); // Default to Play button
-			forward = new KotoFlatIconButton("media-skip-forward-symbolic", Gtk.IconSize.SMALL_TOOLBAR);
+			backward = new FlatIconButton("media-skip-backward-symbolic", Gtk.IconSize.LARGE_TOOLBAR);
+			playpause = new FlatIconButton("media-playback-start-symbolic", Gtk.IconSize.LARGE_TOOLBAR); // Default to Play button
+			forward = new FlatIconButton("media-skip-forward-symbolic", Gtk.IconSize.LARGE_TOOLBAR);
 
 			progressbar = new Gtk.Scale.with_range(Gtk.Orientation.HORIZONTAL, 0, 120, 1); // Default to a GTK Scale with a minimum of zero and max of 120, with increments of 1. This will be changed on media load
 			progressbar.set_draw_value(false); // Don't draw the value next to the bar
 			progressbar.set_digits(0); // Default to 0
 			progressbar.set_increments(1,1);
 
-			repeat = new KotoFlatIconButton("media-playlist-repeat-symbolic", Gtk.IconSize.SMALL_TOOLBAR);
-			shuffle = new KotoFlatIconButton("media-playlist-shuffle-symbolic", Gtk.IconSize.SMALL_TOOLBAR);
-			playlist = new KotoFlatIconButton("list-add-symbolic", Gtk.IconSize.SMALL_TOOLBAR);
+			repeat = new FlatIconButton("media-playlist-repeat-symbolic", Gtk.IconSize.LARGE_TOOLBAR);
+			shuffle = new FlatIconButton("media-playlist-shuffle-symbolic", Gtk.IconSize.LARGE_TOOLBAR);
+			playlist = new FlatIconButton("list-add-symbolic", Gtk.IconSize.LARGE_TOOLBAR);
 			volume = new Gtk.VolumeButton();
 			volume.use_symbolic = true; // Ensure we use the symbolic icon
 
 			// Add all the controls
 			var left_controls = new Gtk.Box(Gtk.Orientation.HORIZONTAL, 10); // Create Left Controls section
-			left_controls.margin_top = 5;
-			left_controls.margin_bottom = 5;
+			left_controls.margin_top = 10;
+			left_controls.margin_bottom = 10;
 			left_controls.margin_left = 10;
 			left_controls.margin_right = 10;
 
@@ -72,11 +73,25 @@ namespace Koto {
 			pack_start(right_controls, false, false, 0); // Add Right Controls
 
 			// Add event listeners
+
+			backward.clicked.connect(on_previous_track);
+			forward.clicked.connect(on_next_track);
 			playpause.clicked.connect(on_toggle_playback);
 			progressbar.button_press_event.connect(on_progressbar_press);
 			progressbar.button_release_event.connect(on_progressbar_release);
 			progressbar.value_changed.connect(on_progressbar_move);
 			volume.value_changed.connect(on_change_volume);
+
+			// Add Playback Engine Event Handling
+			Koto.playback.player.position_updated.connect(on_player_position_updated); // On position_updated, trigger on_player_position_updated
+			Koto.playback.player.state_changed.connect(on_player_state_change); // On Player State change, call on_player_state_change
+
+			// Add Playlist Event Handling
+
+			Koto.playback.playlist.track_changed.connect((track) => { // If the Playlist changes track
+				backward.sensitive = !Koto.playback.playlist.on_first_track; // Set backward button sensitivity to whether or not we're on first track
+				forward.sensitive = !Koto.playback.playlist.on_last_track; // Set forward button sensitivity to whether or not we're on last track
+			});
 		}
 
 		// enabled will return if the PlayerBar is enabled
@@ -84,19 +99,18 @@ namespace Koto {
 			get { return _enabled; }
 		}
 
-		// user_seeking will return if the PlayerBar progressbar is currently being seeked by the user
-		public bool user_seeking {
-			get { return _user_seeking; }
-		}
-
 		// Enable the PlayerBar
 		public void enable() {
-			if (!enabled) { // If the PlayerBar is not already enabled
+			if (!_enabled) { // If the PlayerBar is not already enabled, set a limited set of controls to sensitive
 				_enabled = true;
 
 				foreach (Gtk.Widget widget in get_children()){
 					widget.sensitive = true;
 				}
+
+				backward.sensitive = false; // Set backward to not be sensitive immediately, since it'll only be used for playlists
+				forward.sensitive = false; // Set forward to not be sensitive immediately, since it'll only be used for playlists
+				shuffle.sensitive = false; // Set shuffle to not be sensitive immediately, since it'll only be used for playlists
 			}
 		}
 
@@ -113,6 +127,16 @@ namespace Koto {
 		public void on_change_volume(double volume) {
 			Koto.playback.player.mute = (volume == 0);
 			Koto.playback.player.volume = volume;
+		}
+
+		// on_next_track will handle the clicking of the forward button
+		public void on_next_track() {
+			Koto.playback.playlist.next_track(); // Go to next track
+		}
+
+		// on_previous_track will handle the clicking of the backward button
+		public void on_previous_track() {
+			Koto.playback.playlist.previous_track(); // Go to previous track
 		}
 
 		// on_progressbar_move will handle the changing of the progressbar value
@@ -137,13 +161,35 @@ namespace Koto {
 			return false;
 		}
 
+		// on_player_position_updated is responsible for updating the current track position
+		public void on_player_position_updated(uint64 pos) {
+			if (!_user_seeking && _is_playing) { // If we're allowed to update the progress bar and we're playing content
+				double seconds = Math.floor(pos / 1000000000);
+
+				if (seconds > 0) {
+					progressbar.set_value(seconds); // Set the current position (position in nanoseconds divided by a billion - to get seconds)
+				}
+			}
+		}
+
+		public void on_player_state_change(Gst.PlayerState state) {
+			if (state == Gst.PlayerState.PLAYING) { // If we're currently playing
+				_is_playing = true;
+
+				enable(); // Enable our playerbar (if it isn't enabled already)
+				playpause.set_icon("media-playback-pause-symbolic"); // Change icon to pause since that is the intended future action
+				volume.value = Koto.playback.player.volume; // Set the VolumeButton scale value to the player volume
+			} else if ((state == Gst.PlayerState.PAUSED) || (state == Gst.PlayerState.STOPPED)) { // If we're currently paused or stopped
+				_is_playing = false;
+				playpause.set_icon("media-playback-start-symbolic"); // Change icon to start / play since that is the intended future action
+			}
+		}
+
 		public void on_toggle_playback() {
-			if (Koto.playback.playing) { // If we are playing media
-				Koto.playback.pause(); // Pause media
-				playpause.set_icon("media-playback-pause-symbolic"); // Change icon to pause
-			} else {
-				Koto.playback.play(); // Play media (if possible)
-				playpause.set_icon("media-playback-start-symbolic"); // Change icon to play
+			if (_is_playing) { // If we're currently playing
+				Koto.playback.player.pause(); // Pause
+			} else { // If we're currently paused
+				Koto.playback.player.play();
 			}
 		}
 	}

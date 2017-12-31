@@ -78,7 +78,7 @@ namespace Koto {
 			update_music_button = new KotoMenuItem(_("Update Library"), "view-refresh-symbolic");
 			items.add(update_music_button);
 			
-			back_from_extras_button.button_press_event.connect((e) => { // On connect, go back to our main stack
+			back_from_extras_button.button_release_event.connect((e) => { // On connect, go back to our main stack
 				if (e.button != 1) {
 					return Gdk.EVENT_PROPAGATE; 
 				}

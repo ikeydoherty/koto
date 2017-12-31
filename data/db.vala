@@ -142,31 +142,28 @@ public class KotoDatabase : Object {
 				}
 
 				if (artwork == "") { // If there is no artwork for this artist
-					foreach (KotoTrack track in album.tracks.values) { // For each track (only get first)
-						string album_path = Path.get_dirname(track.path); // Get the album path based on the path of the first track
+					KotoTrack first_track = album.tracks.get(0);
+					string album_path = Path.get_dirname(first_track.path); // Get the album path based on the path of the first track
 
-						File album_directory =  File.parse_name(album_path); // Create a new File based on the album path
+					File album_directory =  File.parse_name(album_path); // Create a new File based on the album path
 
-						if (album_directory != null) {
-							foreach (string artwork_filename in acceptable_artwork_filenames) { // For each artwork filename in our acceptable list
-								File artwork_file = album_directory.get_child(Uri.unescape_string(artwork_filename)); // Get the potential file
+					if (album_directory != null) {
+						foreach (string artwork_filename in acceptable_artwork_filenames) { // For each artwork filename in our acceptable list
+							File artwork_file = album_directory.get_child(Uri.unescape_string(artwork_filename)); // Get the potential file
 
-								if (artwork_file.query_exists()) { // If the file exists
-									try {
-										FileInfo artwork_fileinfo = artwork_file.query_info("standard::*", 0); // Get the file info
+							if (artwork_file.query_exists()) { // If the file exists
+								try {
+									FileInfo artwork_fileinfo = artwork_file.query_info("standard::*", 0); // Get the file info
 
-										if (artwork_fileinfo.get_content_type().has_prefix("image/")) { // If this is an image
-											artwork = Uri.escape_string(Path.build_path(Path.DIR_SEPARATOR_S, album_path, artwork_filename));
-											break;
-										}
-									} catch (Error err) {
-										stdout.printf("Failed to get the artwork info for %s in %s: %s\n", artwork_filename, album_path, err.message);
+									if (artwork_fileinfo.get_content_type().has_prefix("image/")) { // If this is an image
+										artwork = Uri.escape_string(Path.build_path(Path.DIR_SEPARATOR_S, album_path, artwork_filename));
+										break;
 									}
+								} catch (Error err) {
+									stdout.printf("Failed to get the artwork info for %s in %s: %s\n", artwork_filename, album_path, err.message);
 								}
 							}
 						}
-
-						break;
 					}
 
 					if (artwork != "") { // If we found artwork

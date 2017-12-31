@@ -38,13 +38,13 @@ public class KotoAlbum : Object {
 	private string _artwork_uri;
 
 	public string name;
-	public Gee.ArrayList<string> genres;
-	public Gee.HashMap<string,KotoTrack> tracks;
+	public Gee.ConcurrentList<string> genres;
+	public Gee.ConcurrentList<KotoTrack> tracks;
 
 	public KotoAlbum(string a_name, KotoTrack[]? a_tracks) {
 		name = a_name;
-		genres = new Gee.ArrayList<string>(); // Set to an empty array
-		tracks = new Gee.HashMap<string,KotoTrack>(); // Create an empty HashMap of tracks
+		genres = new Gee.ConcurrentList<string>(); // Set to an empty array
+		tracks = new Gee.ConcurrentList<KotoTrack>(); // Create an empty HashMap of tracks
 
 		if (a_tracks != null) { // If we were provided a HashMap of KotoTracks
 			add_tracks(a_tracks);
@@ -60,7 +60,7 @@ public class KotoAlbum : Object {
 	// TODO: Make this not suck.
 	public void add_tracks(KotoTrack[]? added_tracks) {
 		foreach (KotoTrack track in added_tracks) { // For reach track in tracks
-			tracks.set(track.id, track); // Set in tracks this track, with the key being the track ID
+			tracks.add(track);
 			string[] track_genres = track.genre.split(";"); // Split the genres based on the semi-colon delimiter, which is what TagLib presents genres as
 
 			foreach (string genre in track_genres) { // For each genre specified
@@ -68,6 +68,23 @@ public class KotoAlbum : Object {
 					genres.add(genre); // Add this genre
 				}
 			}
+		}
+
+		tracks.sort(compare_tracks); // Ensure we sort items when added
+	}
+
+	// compare_tracks provides a sort result for which track should be ordered first
+	public int compare_tracks(KotoTrack first_track, KotoTrack second_track) {
+		string first_child_text = first_track.title;
+		string second_child_text = second_track.title;
+
+		if (first_child_text.has_prefix(_("Chapter"))) { // If this is an audiobook, has the string Chapter, do some special comparison because strcmp isn't good with numbers
+			int first_chapter_num = int.parse(first_child_text.replace(_("Chapter") + " ", "")); // Strip out Chapter # (or the locale string) for the first chapter
+			int second_chapter_num = int.parse(second_child_text.replace(_("Chapter") + " ", "")); // Strip out Chapter # (or the locale string) for the second chapter
+
+			return (first_chapter_num <= second_chapter_num) ? -1 : 1; // If the first chapter is a lower number than the second chapter, place it first
+		} else {
+			return (strcmp(first_child_text, second_child_text) <= 0) ? -1 : 1;
 		}
 	}
 }
