@@ -148,7 +148,7 @@ namespace Koto {
 		public void on_progressbar_move() {
 			if (_user_seeking) { // If the Playback Engine has been instructed not to update the value, meaning this is a user change
 				var new_value = Math.floor(progressbar.get_value());
-				Koto.playback.seek((int64) new_value * Koto.playback.NS);
+				Koto.playback.seek((int64) new_value * Koto.PlaybackEngine.NS);
 			}
 		}
 
