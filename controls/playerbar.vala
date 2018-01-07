@@ -121,6 +121,13 @@ namespace Koto {
 			}
 		}
 
+		// This function will attempt to reset our progressbar
+		public void reset_progressbar() {
+			Koto.app.playerbar.progressbar.set_value(0);
+			Koto.app.playerbar.progressbar.set_range(0,0);
+			Koto.app.playerbar.queue_draw(); // Redraw
+		}
+
 		// on_change_volume will handle the value change on our VolumeButton scale
 		public void on_change_volume(double volume) {
 			Koto.playback.playbin.mute = (volume == 0);
@@ -141,7 +148,7 @@ namespace Koto {
 		public void on_progressbar_move() {
 			if (_user_seeking) { // If the Playback Engine has been instructed not to update the value, meaning this is a user change
 				var new_value = Math.floor(progressbar.get_value());
-				Koto.playback.player.seek_simple(Gst.Format.TIME, Gst.SeekFlags.FLUSH, ((int64) new_value * 1000000000)); // Seek to the new position, which is the number of seconds in the new_value * nanoseconds
+				Koto.playback.seek((int64) new_value * Koto.playback.NS);
 			}
 		}
 
@@ -163,10 +170,6 @@ namespace Koto {
 		// on_player_position_updated is responsible for updating the current track position
 		public void on_player_position_updated(double pos) {
 			if (!_user_seeking) { // If we're allowed to update the progress bar and we're playing content
-				if (pos == 0) {
-					stdout.printf("Should be zero.\n");
-				}
-
 				progressbar.set_value(pos); // Set the current position
 			}
 		}

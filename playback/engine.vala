@@ -2,6 +2,7 @@
 
 namespace Koto {
 	public class PlaybackEngine {
+		public dynamic Gst.Element audio;
 		public Koto.Playlist playlist; // Our Playlist
 		public dynamic Gst.Pipeline player;
 		public dynamic Gst.Element playbin;
@@ -10,6 +11,8 @@ namespace Koto {
 		private double current_position;
 		private bool is_playing;
 		private bool requesting_play;
+		
+		public const int64 NS = 1000000000;
 
 		// Signals
 		public signal void position_changed(double current_position);
@@ -18,8 +21,10 @@ namespace Koto {
 		public PlaybackEngine() {
 			player = new Gst.Pipeline("player");
 			playbin = Gst.ElementFactory.make("playbin", "play"); // Create a new player
+			audio = Gst.ElementFactory.make("autoaudiosink", "sink");
 			Gst.Element suppress_video = Gst.ElementFactory.make("fakesink", "suppress-video");
 
+			playbin.audio_sink = audio;
 			playbin.video_sink = suppress_video; // Try suppressing video
 			playbin.volume = 0.5; // Set a default volume
 			player.add(playbin); // Add our playbin to the pipeline
@@ -32,17 +37,34 @@ namespace Koto {
 			playlist.track_changed.connect(load_file); // On the Playlist's track_changed, load the file
 		}
 
-		private bool attempt_force_playback() {
-			if (requesting_play) { // If we're requesting playback
-				playbin.set_state(Gst.State.PLAYING); // Attempt playback
-				return true;
-			} else { // If we're no longer requesting playback
-				return false; // Cancel the timeout
-			}
-		}
-
 		private bool bus_message_handler(Gst.Bus bus, Gst.Message message) {
 			switch (message.type) {
+				case Gst.MessageType.ASYNC_DONE: // If a state change is done
+					if (requesting_play) {
+						play();
+					}
+					break;
+				case Gst.MessageType.STATE_CHANGED: // When it's done changing state
+					Gst.State old_state;
+					Gst. State new_state;
+					message.parse_state_changed(out old_state, out new_state, null);
+
+					is_playing = (new_state == Gst.State.PLAYING); // Update our is_playing for internal clock / progress usage
+
+					if ((old_state == Gst.State.NULL) && (new_state == Gst.State.READY)) { // If we're ready to play
+						update_duration(); // Update our duration info
+
+
+					} else if (((old_state == Gst.State.NULL) || (old_state == Gst.State.PAUSED)) && (new_state == Gst.State.PLAYING)) { // If we're starting playback
+						requesting_play = false; // No longer requesting play
+						Timeout.add(50, update_progress, Priority.HIGH); // Create a new timeout that triggers every 50ms to update progress at high priority
+					} else if (((old_state == Gst.State.PLAYING) || (old_state == Gst.State.PAUSED)) && (new_state == Gst.State.NULL)) { // If we're freeing resources
+						Koto.app.playerbar.reset_progressbar(); // Reset our progressbar
+						player_monitor.post(new Gst.Message.reset_time(playbin, 0));
+					}
+
+					state_changed(new_state); // Send the state_changed signal with this state
+					break;
 				case Gst.MessageType.EOS: // If we reached the end of the file
 					playlist.next_track();
 					break;
@@ -52,29 +74,6 @@ namespace Koto {
 					message.parse_error(out error, out debug_info);
 
 					stdout.printf("An error has occured during playback: %s\n", error.message);
-					break;
-				case Gst.MessageType.STATE_CHANGED: // If the state changed
-					Gst.State new_state;
-					message.parse_state_changed(null, out new_state, null);
-					is_playing = (new_state == Gst.State.PLAYING); // Update our is_playing for internal clock / progress usage
-
-					if (is_playing) { // If we're playing
-						requesting_play = false;
-						Timeout.add(50, update_progress, Priority.HIGH); // Create a new timeout that triggers every 50ms to update progress at high priority
-						state_changed(new_state); // Send the state_changed signal with this state
-					} else {
-						if (new_state == Gst.State.READY) { // If we're ready
-							update_duration(); // Update our duration info
-						}
-
-						if (requesting_play) { // If we're explicitly requesting playback, try to force it
-							Timeout.add(50, attempt_force_playback, Priority.HIGH); // Create a timeout that keeps trying to force playback
-						} else {
-							stdout.printf("Should be pausing.\n");
-							state_changed(new_state); // Send the state_changed signal with this state
-						}
-					}
-
 					break;
 			}
 
@@ -86,10 +85,10 @@ namespace Koto {
 			int64 current_duration = 0;
 
 			if (playbin.query_duration(Gst.Format.TIME, out current_duration)) { // If we successfully fetched duration
-				double track_duration = (current_duration / 1000000000); // Get the total number of seconds for the track, which is the duration (in nanoseconds) divided by 1 billion
+				double track_duration = (current_duration / NS); // Get the total number of seconds for the track, which is the duration (in nanoseconds) divided by 1 billion
 
 				if (track_duration > 0) { // If we have valid times
-					stdout.printf("New duration: %s\n", track_duration.to_string());
+					Koto.app.playerbar.reset_progressbar(); // Reset our progressbar
 					Koto.app.playerbar.progressbar.set_range(0, track_duration); // Set the new range from 0 to the duration of the track
 				}
 			}
@@ -100,8 +99,8 @@ namespace Koto {
 			if (is_playing) { // If we're playing
 				int64 current_pos = 0;
 
-				if (playbin.query_position(Gst.Format.TIME, out current_pos)) { // If we successfully fetched the current position
-					double new_position = (current_pos / 1000000000); // Get the total number of seconds in our current position
+				if (audio.query_position(Gst.Format.TIME, out current_pos)) { // If we successfully fetched the current position
+					double new_position = (current_pos / NS); // Get the total number of seconds in our current position
 
 					if (new_position != current_position) { // If the new position is different from the old
 						current_position = new_position;
@@ -146,9 +145,16 @@ namespace Koto {
 			playbin.set_state(Gst.State.PAUSED);
 		}
 
+		// seek will attempt to seek to the designated timestamp
+		public void seek(int64 timestamp) {
+			player.seek_simple(Gst.Format.TIME, Gst.SeekFlags.FLUSH, timestamp);
+		}
+
 		// stop will attempt to stop / reset our playbin
 		public void stop() {
 			playbin.set_state(Gst.State.NULL);
+			Gst.Pad audio_pad = audio.get_static_pad("sink");
+			audio_pad.offset = 0; // Reset offset
 		}
 	} 
 }
