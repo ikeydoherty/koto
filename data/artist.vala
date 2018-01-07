@@ -15,7 +15,7 @@ public class KotoArtist : Object {
 	}
 
 	// add_album will add an album to our albums
-	public void add_album(string album_name, KotoTrack[]? tracks) {
+	public void add_album(string album_name, Gee.ConcurrentList<KotoTrack> tracks) {
 		var album = albums.get(album_name); // Get the album if it exists already
 
 		if (album == null) { // If this album doesn't exist
@@ -29,7 +29,8 @@ public class KotoArtist : Object {
 
 	// add_track will add a track to an album
 	public void add_track(string album_name, KotoTrack track) {
-		KotoTrack[] tracks = { track }; // Create a new tracks array
+		Gee.ConcurrentList<KotoTrack> tracks = new Gee.ConcurrentList<KotoTrack>();
+		tracks.add(track);
 		add_album(album_name, tracks);
 	}
 }
@@ -41,7 +42,7 @@ public class KotoAlbum : Object {
 	public Gee.ConcurrentList<string> genres;
 	public Gee.ConcurrentList<KotoTrack> tracks;
 
-	public KotoAlbum(string a_name, KotoTrack[]? a_tracks) {
+	public KotoAlbum(string a_name, Gee.ConcurrentList<KotoTrack>? a_tracks) {
 		name = a_name;
 		genres = new Gee.ConcurrentList<string>(); // Set to an empty array
 		tracks = new Gee.ConcurrentList<KotoTrack>(); // Create an empty HashMap of tracks
@@ -56,9 +57,8 @@ public class KotoAlbum : Object {
 		set { _artwork_uri = Uri.unescape_string(value); }
 	}
 
-	// add_tracks will add all the tracks provided, only updating 
-	// TODO: Make this not suck.
-	public void add_tracks(KotoTrack[]? added_tracks) {
+	// add_tracks will add all the tracks provided
+	public void add_tracks(Gee.ConcurrentList<KotoTrack> added_tracks) {
 		foreach (KotoTrack track in added_tracks) { // For reach track in tracks
 			tracks.add(track);
 			string[] track_genres = track.genre.split(";"); // Split the genres based on the semi-colon delimiter, which is what TagLib presents genres as

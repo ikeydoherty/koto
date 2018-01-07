@@ -135,6 +135,8 @@ namespace Koto {
 
 		// method_destroy will handle our destroy method
 		void method_destroy() {
+			Koto.playback.stop(); // Set the state to null so it stops buffering any existing tracks and allows deinit
+			Gst.deinit(); // Ensure we de-initialize Gst
 			Gtk.main_quit();
 		}
 	}

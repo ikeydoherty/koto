@@ -10,11 +10,7 @@ namespace Koto {
 
 		// Signals
 		public signal void is_empty(); // is_empty is used to indicate when a playlist is empty.
-		public signal void track_is_first(KotoTrack track); // is_first is used to indicate that the current track is the first track in the Playlist
-		public signal void track_is_last(KotoTrack track); // is_last is used to indicate that the current track is the last track in the Playlist
-		public signal void track_added(KotoTrack track); // added is used for when a track is added, typically via add_track
 		public signal void track_changed(KotoTrack track); // changed is used when we change the track
-		public signal void track_removed(KotoTrack track); // removed is used for when a track is removed, typically via remove_track
 
 		public Playlist(Gee.ConcurrentList<KotoTrack>? tracks) {
 			if (tracks != null) { // If we have tracks defined
@@ -52,13 +48,19 @@ namespace Koto {
 			get { return _on_last_track; }
 		}
 
+		// add_tracks will add a list of tracks
+		public void add_tracks(Gee.ConcurrentList<KotoTrack> tracks) {
+			foreach (KotoTrack track in tracks) {
+				_tracks.add(track);
+			}
+
+			_on_last_track = false; // No longer on last track
+		}
+
 		// add_track will add a track to our tracks
 		public void add_track(KotoTrack track) {
-			if (!_tracks.contains(track)) { // If the Playlist does not already contain this track
-				_tracks.add(track);
-				_on_last_track = false; // No longer on last track
-				track_added(track);
-			}
+			_tracks.add(track);
+			_on_last_track = false; // No longer on last track
 		}
 
 		// change_track is responsible for all the logic for actually changing the current track in our playlist
@@ -72,11 +74,9 @@ namespace Koto {
 				if (track_index == 0) { // If this is the first track
 					_on_first_track = true;
 					_on_last_track = (_tracks.size == 1);
-					track_is_first(track); // Trigger is_first to indicate we're now on the first track
 				} else if (track_index == (_tracks.size - 1)) { // If this is the last track
 					_on_first_track = (_tracks.size == 1);
 					_on_last_track = true;
-					track_is_last(track); // Trigger is_last to indicate we're not on the last track
 				} else { // If this is neither the first or last track
 					_on_first_track = false;
 					_on_last_track = false;
@@ -91,11 +91,6 @@ namespace Koto {
 			_tracks.clear();
 			_on_first_track = true;
 			_on_last_track = true;
-
-			if (_current_track != null) { // If there is a currently playing track
-				track_is_first(_current_track); // Trigger is_first since the current playing track is now the first / only item
-				track_is_last(_current_track); // Trigger is_last since the current playing track is now the last
-			}
 
 			is_empty(); // Trigger empty since the playlist is empty
 		}
@@ -122,9 +117,8 @@ namespace Koto {
 		public void remove_track(KotoTrack track) {
 			if (_tracks.contains(track)) { // If the Playlist contains this track
 				_tracks.remove(track);
-				track_removed(track); // Trigger removed to indicate the track has been removed
 
-				if (_tracks.size == 0) { // If the playlist is now empty
+				if (_tracks.is_empty) { // If the playlist is now empty
 					is_empty(); // Trigger our is_empty signal
 				}
 			}

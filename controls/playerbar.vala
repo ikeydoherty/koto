@@ -3,7 +3,6 @@
 namespace Koto {
 	public class PlayerBar : Gtk.Box {
 		private bool _enabled;
-		private bool _is_playing;
 		private bool _user_seeking;
 
 		// Left Side Controls
@@ -83,8 +82,8 @@ namespace Koto {
 			volume.value_changed.connect(on_change_volume);
 
 			// Add Playback Engine Event Handling
-			Koto.playback.player.position_updated.connect(on_player_position_updated); // On position_updated, trigger on_player_position_updated
-			Koto.playback.player.state_changed.connect(on_player_state_change); // On Player State change, call on_player_state_change
+			Koto.playback.position_changed.connect(on_player_position_updated); // On position_updated, trigger on_player_position_updated
+			Koto.playback.state_changed.connect(on_player_state_change); // On Player State change, call on_player_state_change
 
 			// Add Playlist Event Handling
 
@@ -103,13 +102,12 @@ namespace Koto {
 		public void enable() {
 			if (!_enabled) { // If the PlayerBar is not already enabled, set a limited set of controls to sensitive
 				_enabled = true;
+				volume.value = 0.5; // Set in the middle after enabling
 
 				foreach (Gtk.Widget widget in get_children()){
 					widget.sensitive = true;
 				}
 
-				backward.sensitive = false; // Set backward to not be sensitive immediately, since it'll only be used for playlists
-				forward.sensitive = false; // Set forward to not be sensitive immediately, since it'll only be used for playlists
 				shuffle.sensitive = false; // Set shuffle to not be sensitive immediately, since it'll only be used for playlists
 			}
 		}
@@ -125,8 +123,8 @@ namespace Koto {
 
 		// on_change_volume will handle the value change on our VolumeButton scale
 		public void on_change_volume(double volume) {
-			Koto.playback.player.mute = (volume == 0);
-			Koto.playback.player.volume = volume;
+			Koto.playback.playbin.mute = (volume == 0);
+			Koto.playback.playbin.volume = volume;
 		}
 
 		// on_next_track will handle the clicking of the forward button
@@ -143,7 +141,7 @@ namespace Koto {
 		public void on_progressbar_move() {
 			if (_user_seeking) { // If the Playback Engine has been instructed not to update the value, meaning this is a user change
 				var new_value = Math.floor(progressbar.get_value());
-				Koto.playback.player.seek(((uint64) new_value * 1000000000)); // Seek to the new position, which is the number of seconds in the new_value * nanoseconds
+				Koto.playback.player.seek_simple(Gst.Format.TIME, Gst.SeekFlags.FLUSH, ((int64) new_value * 1000000000)); // Seek to the new position, which is the number of seconds in the new_value * nanoseconds
 			}
 		}
 
@@ -157,39 +155,41 @@ namespace Koto {
 		// on_progressbar_release will handle our release event
 		public bool on_progressbar_release(Gdk.EventButton e) {
 			_user_seeking = false; // Should allow updating by Playback Engine
+			Koto.playback.play();
 
 			return false;
 		}
 
 		// on_player_position_updated is responsible for updating the current track position
-		public void on_player_position_updated(uint64 pos) {
-			if (!_user_seeking && _is_playing) { // If we're allowed to update the progress bar and we're playing content
-				double seconds = Math.floor(pos / 1000000000);
-
-				if (seconds > 0) {
-					progressbar.set_value(seconds); // Set the current position (position in nanoseconds divided by a billion - to get seconds)
+		public void on_player_position_updated(double pos) {
+			if (!_user_seeking) { // If we're allowed to update the progress bar and we're playing content
+				if (pos == 0) {
+					stdout.printf("Should be zero.\n");
 				}
+
+				progressbar.set_value(pos); // Set the current position
 			}
 		}
 
-		public void on_player_state_change(Gst.PlayerState state) {
-			if (state == Gst.PlayerState.PLAYING) { // If we're currently playing
-				_is_playing = true;
+		public void on_player_state_change(Gst.State state) {
+			enable(); // Enable our playerbar (if it isn't enabled already)
 
-				enable(); // Enable our playerbar (if it isn't enabled already)
+			if (state == Gst.State.PLAYING) { // If we're currently playing
 				playpause.set_icon("media-playback-pause-symbolic"); // Change icon to pause since that is the intended future action
-				volume.value = Koto.playback.player.volume; // Set the VolumeButton scale value to the player volume
-			} else if ((state == Gst.PlayerState.PAUSED) || (state == Gst.PlayerState.STOPPED)) { // If we're currently paused or stopped
-				_is_playing = false;
+			} else if ((state == Gst.State.PAUSED) || (state == Gst.State.NULL)) { // If we're currently paused, stopped, or ready to play
 				playpause.set_icon("media-playback-start-symbolic"); // Change icon to start / play since that is the intended future action
 			}
 		}
 
 		public void on_toggle_playback() {
-			if (_is_playing) { // If we're currently playing
-				Koto.playback.player.pause(); // Pause
+			Gst.State current_state;
+			Koto.playback.playbin.get_state(out current_state, null, 0);
+
+			if (current_state == Gst.State.PLAYING) { // If we're currently playing
+				Koto.playback.pause(); // Set to pause
 			} else { // If we're currently paused
-				Koto.playback.player.play();
+				stdout.printf("We are currently paused.\n");
+				Koto.playback.play(); // Set to playing
 			}
 		}
 	}

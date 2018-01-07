@@ -80,11 +80,7 @@ namespace Koto {
 		// play_album will attempt to load our album as a playlist and play it
 		public void play_album() {
 			Koto.playback.playlist.clear(); // Clear our playlist
-
-			foreach (KotoTrack track in album.tracks) { // Add every track to the playlist
-				Koto.playback.playlist.add_track(track);
-			}
-
+			Koto.playback.playlist.add_tracks(album.tracks);
 			Koto.playback.start_playlist(); // Start playback of playlist
 		}
 
