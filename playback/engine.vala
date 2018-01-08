@@ -66,7 +66,11 @@ namespace Koto {
 					state_changed(new_state); // Send the state_changed signal with this state
 					break;
 				case Gst.MessageType.EOS: // If we reached the end of the file
-					playlist.next_track();
+					if (!playlist.on_last_track) { // If we're not on the last track
+						playlist.next_track(); // Go to the next track
+					} else {
+						Koto.app.header.subtitle = "Secret thing goes here."; // Reset headerbar subtitle
+					}
 					break;
 				case Gst.MessageType.ERROR: // If there was an error
 					GLib.Error error;
@@ -124,8 +128,13 @@ namespace Koto {
 				playbin.set("uri", Gst.filename_to_uri(Uri.unescape_string(playlist.current_track.path))); // Set uri to the filename_to_uri, unescaped form of the KotoTrack path value and set it to the player.uri
 				play();
 
-				var notification = new Koto.KotoNotification(track.album->artist->name, track.album->artwork_uri, track.title); // Create a new notification
+				string artist = track.album->artist->name;
+				string album_uri =  track.album->artwork_uri;
+
+				var notification = new Koto.KotoNotification(artist, album_uri, track.title); // Create a new notification
 				notification.show();
+
+				Koto.app.header.subtitle = "%s - %s".printf(track.title, artist);
 			} catch (Error e) {
 				stdout.printf("Failed to convert filename to uri with Gst: %s\n", e.message);
 			}
