@@ -111,7 +111,7 @@ namespace Koto {
 			album_name_label.attributes = album_name_attrs;
 
 			favorite_button = new Koto.FlatIconButton("emblem-favorite-symbolic", Gtk.IconSize.MENU); // Create our favorite button
-			play_button = new Koto.FlatIconButton("media-playback-start", Gtk.IconSize.MENU); // Create our play icon
+			play_button = new Koto.FlatIconButton("media-playback-start-symbolic", Gtk.IconSize.MENU); // Create our play icon
 
 			pack_start(album_name_label, false, true, 0); // Add the album title and take up as much space as possible
 			pack_end(favorite_button, false, false, 0); // Add favorite button to end of Album Header

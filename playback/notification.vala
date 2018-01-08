@@ -7,6 +7,7 @@ namespace Koto {
 			id = 0; // Set a non-unique ID
 			set_app_name("Koto");
 			set_artwork(album_art_uri);
+			set_category("x-gnome.music"); // Piggyback off x-gnome.music for now
 		}
 
 		// set_artwork will set our artwork or reset to audio-headphones-symbolic
