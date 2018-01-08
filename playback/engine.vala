@@ -123,6 +123,9 @@ namespace Koto {
 				stop(); // Free any resources
 				playbin.set("uri", Gst.filename_to_uri(Uri.unescape_string(playlist.current_track.path))); // Set uri to the filename_to_uri, unescaped form of the KotoTrack path value and set it to the player.uri
 				play();
+
+				var notification = new Koto.KotoNotification(track.album->artist->name, track.album->artwork_uri, track.title); // Create a new notification
+				notification.show();
 			} catch (Error e) {
 				stdout.printf("Failed to convert filename to uri with Gst: %s\n", e.message);
 			}

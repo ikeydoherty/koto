@@ -2,9 +2,6 @@
 
 namespace Koto {
 	public class Playlist {
-		private bool _on_first_track; // Whether or not we are on first track
-		private bool _on_last_track; // Whether or not we are on last track
-		private KotoTrack _current_track; // The current track
 		private int _current_track_index; // The current track index
 		private Gee.ConcurrentList<KotoTrack> _tracks; // A list of KotoTracks to play
 
@@ -28,6 +25,7 @@ namespace Koto {
 			_current_track_index = 0;
 		}
 
+		private KotoTrack _current_track; // The current track
 		public KotoTrack current_track {
 			get { return _current_track; }
 		}
@@ -40,10 +38,12 @@ namespace Koto {
 			return _tracks.get(_tracks.size - 1);
 		}
 
+		private bool _on_first_track; // Whether or not we are on first track
 		public bool on_first_track {
 			get { return _on_first_track; }
 		}
 
+		private bool _on_last_track; // Whether or not we are on last track
 		public bool on_last_track {
 			get { return _on_last_track; }
 		}

@@ -1,8 +1,6 @@
 // KotoTextListItem is a GTK ListBoxRow with a label in it. I know, groundbreaking.
 
 public class KotoTextListItem : Gtk.ListBoxRow {
-	private Gtk.Label _label;
-	private string _text;
 
 	public KotoTextListItem(string list_text) {
 		Object();
@@ -21,6 +19,7 @@ public class KotoTextListItem : Gtk.ListBoxRow {
 		this.add(label);
 	}
 
+	private Gtk.Label _label;
 	public Gtk.Label label {
 		get { return _label; }
 		set {
@@ -28,6 +27,7 @@ public class KotoTextListItem : Gtk.ListBoxRow {
 		}
 	}
 
+	private string _text;
 	public string text {
 		get { return _text; }
 		set {

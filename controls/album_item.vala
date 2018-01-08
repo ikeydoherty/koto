@@ -117,6 +117,5 @@ namespace Koto {
 			pack_end(favorite_button, false, false, 0); // Add favorite button to end of Album Header
 			pack_end(play_button, false, false, 15); // Add play button to end of Album Header
 		}
-
 	}
 }

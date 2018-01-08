@@ -53,6 +53,8 @@ namespace Koto {
 				stdout.printf("Failed to initialize gstreamer: %s\n", e.message);
 			}
 
+			Notify.init("Koto"); // Initialize Notify
+
 			music_dir = Environment.get_user_special_dir(UserDirectory.MUSIC); // Get the user's Music directory, using XDG special user directories
 			kotodb = new KotoDatabase(); // Create a new database
 

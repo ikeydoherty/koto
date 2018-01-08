@@ -2,7 +2,6 @@
 
 namespace Koto {
 	public class PlayerBar : Gtk.Box {
-		private bool _enabled;
 		private bool _user_seeking;
 
 		// Left Side Controls
@@ -94,6 +93,7 @@ namespace Koto {
 		}
 
 		// enabled will return if the PlayerBar is enabled
+		private bool _enabled;
 		public bool enabled {
 			get { return _enabled; }
 		}

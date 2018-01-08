@@ -19,7 +19,7 @@ public class KotoArtist : Object {
 		var album = albums.get(album_name); // Get the album if it exists already
 
 		if (album == null) { // If this album doesn't exist
-			album = new KotoAlbum(album_name, tracks); // Create a new KotoAlbum
+			album = new KotoAlbum(this, album_name, tracks); // Create a new KotoAlbum
 		} else {
 			album.add_tracks(tracks); // Add tracks
 		}
@@ -36,13 +36,13 @@ public class KotoArtist : Object {
 }
 
 public class KotoAlbum : Object {
-	private string _artwork_uri;
-
+	public KotoArtist* artist;
 	public string name;
 	public Gee.ConcurrentList<string> genres;
 	public Gee.ConcurrentList<KotoTrack> tracks;
 
-	public KotoAlbum(string a_name, Gee.ConcurrentList<KotoTrack>? a_tracks) {
+	public KotoAlbum(KotoArtist* a_artist, string a_name, Gee.ConcurrentList<KotoTrack>? a_tracks) {
+		artist = a_artist;
 		name = a_name;
 		genres = new Gee.ConcurrentList<string>(); // Set to an empty array
 		tracks = new Gee.ConcurrentList<KotoTrack>(); // Create an empty HashMap of tracks
@@ -52,6 +52,7 @@ public class KotoAlbum : Object {
 		}
 	}
 
+	private string _artwork_uri;
 	public string artwork_uri {
 		get { return _artwork_uri; }
 		set { _artwork_uri = Uri.unescape_string(value); }
@@ -60,6 +61,7 @@ public class KotoAlbum : Object {
 	// add_tracks will add all the tracks provided
 	public void add_tracks(Gee.ConcurrentList<KotoTrack> added_tracks) {
 		foreach (KotoTrack track in added_tracks) { // For reach track in tracks
+			track.album = this;
 			tracks.add(track);
 			string[] track_genres = track.genre.split(";"); // Split the genres based on the semi-colon delimiter, which is what TagLib presents genres as
 
@@ -90,6 +92,7 @@ public class KotoAlbum : Object {
 }
 
 public class KotoTrack : Object {
+	public KotoAlbum* album;
 	public string id; // Unique track ID
 	public string path; // File path to track
 	public string genre; // Genre for track

@@ -8,6 +8,7 @@ gobject_dep = dependency('gobject-2.0')
 gst_dep = dependency('gstreamer-1.0', version: '>=1.12.0')
 gst_player_dep = dependency('gstreamer-player-1.0', version: '>=1.12.0')
 gtk_dep = dependency('gtk+-3.0', version: '>=3.22.26')
+libnotify_dep = dependency('libnotify', version: '>=0.7.7')
 pango_dep = dependency('pango', version: '>=1.40.0')
 sqlite_dep = dependency('sqlite3', version: '>=3.20.0')
 taglib_dep = dependency('taglib_c', version: '>=1.11.0')
@@ -34,6 +35,7 @@ files = files(
 	'data/db.vala',
 	'data/metadata.vala',
 	'playback/engine.vala',
+	'playback/notification.vala',
 	'playback/playlist.vala',
 	'views/devices.vala',
 	'views/getting_started.vala',
@@ -53,6 +55,7 @@ executable(
 		gst_dep,
 		gst_player_dep,
 		gtk_dep,
+		libnotify_dep,
 		pango_dep,
 		sqlite_dep,
 		taglib_dep
