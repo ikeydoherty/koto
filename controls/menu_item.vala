@@ -5,7 +5,7 @@ public class KotoMenuItem : Gtk.Button {
 		set_can_focus(false);
 
 		if ((icon != null) && (icon != "")) { // If we're defined an icon
-			var image = new Gtk.Image.from_icon_name(icon, Gtk.IconSize.MENU);
+			var image = new Koto.FlatIconButton(icon, 16);
 			content.pack_start(image, false, false, 0);
 		}
 
@@ -15,7 +15,7 @@ public class KotoMenuItem : Gtk.Button {
 		if ((arrow != null) && (arrow != "")) { // If we've defined an arrow direction
 			var symbolic = (arrow == "left") ? "previous" : arrow;
 			symbolic = (arrow == "right") ? "next" : symbolic;
-			var arrow_image = new Gtk.Image.from_icon_name("go-" + symbolic + "-symbolic", Gtk.IconSize.MENU);
+			var arrow_image = new Koto.FlatIconButton("go-" + symbolic + "-symbolic", 16);
 			content.pack_end(arrow_image, false, false, 0);
 		}
 

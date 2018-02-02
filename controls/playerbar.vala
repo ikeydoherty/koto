@@ -2,7 +2,7 @@
 
 namespace Koto {
 	public class PlayerBar : Gtk.Box {
-		private bool _user_seeking;
+		private bool _user_seeking = false;
 
 		// Left Side Controls
 		public FlatIconButton backward;
@@ -20,26 +20,26 @@ namespace Koto {
 
 		public PlayerBar() {
 			Object(orientation: Gtk.Orientation.HORIZONTAL);
-			_enabled = false; // Default to PlayerBar not being enabled
-			_user_seeking = false; // D efault to allowing progressbar updating
 
 			// Have the playerbar look the same as the CSD / titlebar
 			get_style_context().add_class("csd");
 			get_style_context().add_class("titlebar");
 
 			// Create all our controls
-			backward = new FlatIconButton("media-skip-backward-symbolic", Gtk.IconSize.LARGE_TOOLBAR);
-			playpause = new FlatIconButton("media-playback-start-symbolic", Gtk.IconSize.LARGE_TOOLBAR); // Default to Play button
-			forward = new FlatIconButton("media-skip-forward-symbolic", Gtk.IconSize.LARGE_TOOLBAR);
+			backward = new FlatIconButton("media-skip-backward-symbolic", 22);
+			forward = new FlatIconButton("media-skip-forward-symbolic", 22);
+
+			playpause = new FlatIconButton("media-playback-start-symbolic", 22); // Default to Play button
+			playpause.width_request = 26; // Set to a width larger than our default, since our pause button is set to 24 instead of 22 and we don't want it shifting around
 
 			progressbar = new Gtk.Scale.with_range(Gtk.Orientation.HORIZONTAL, 0, 120, 1); // Default to a GTK Scale with a minimum of zero and max of 120, with increments of 1. This will be changed on media load
 			progressbar.set_draw_value(false); // Don't draw the value next to the bar
 			progressbar.set_digits(0); // Default to 0
 			progressbar.set_increments(1,1);
 
-			repeat = new FlatIconButton("media-playlist-repeat-symbolic", Gtk.IconSize.LARGE_TOOLBAR);
-			shuffle = new FlatIconButton("media-playlist-shuffle-symbolic", Gtk.IconSize.LARGE_TOOLBAR);
-			playlist = new FlatIconButton("list-add-symbolic", Gtk.IconSize.LARGE_TOOLBAR);
+			repeat = new FlatIconButton("media-playlist-repeat-symbolic", 22);
+			shuffle = new FlatIconButton("media-playlist-shuffle-symbolic", 22);
+			playlist = new FlatIconButton("emblem-favorite-symbolic", 22);
 			volume = new Gtk.VolumeButton();
 			volume.use_symbolic = true; // Ensure we use the symbolic icon
 
@@ -47,8 +47,8 @@ namespace Koto {
 			var left_controls = new Gtk.Box(Gtk.Orientation.HORIZONTAL, 10); // Create Left Controls section
 			left_controls.margin_top = 10;
 			left_controls.margin_bottom = 10;
-			left_controls.margin_left = 10;
-			left_controls.margin_right = 10;
+			left_controls.margin_left = 15;
+			left_controls.margin_right = 15;
 
 			left_controls.pack_start(backward, false, false, 0); // Add backward button to Left controls
 			left_controls.pack_start(playpause, false, false, 0); // Add playpause button to Left controls
@@ -58,8 +58,10 @@ namespace Koto {
 			middle_controls.pack_start(progressbar, true, true, 0); // Add our progressbar as the center width
 
 			var right_controls = new Gtk.Box(Gtk.Orientation.HORIZONTAL, 10); // Create our Right Controls section
-			right_controls.margin_left = 10;
-			right_controls.margin_right = 10;
+			right_controls.margin_top = 10;
+			right_controls.margin_bottom = 10;
+			right_controls.margin_left = 15;
+			right_controls.margin_right = 15;
 
 			right_controls.pack_start(repeat, false, false, 0); // Add repeat button to Right controls
 			right_controls.pack_start(shuffle, false, false, 0); // Add shuffle button to Right controls
@@ -93,7 +95,7 @@ namespace Koto {
 		}
 
 		// enabled will return if the PlayerBar is enabled
-		private bool _enabled;
+		private bool _enabled = false;
 		public bool enabled {
 			get { return _enabled; }
 		}
@@ -178,9 +180,9 @@ namespace Koto {
 			enable(); // Enable our playerbar (if it isn't enabled already)
 
 			if (state == Gst.State.PLAYING) { // If we're currently playing
-				playpause.set_icon("media-playback-pause-symbolic"); // Change icon to pause since that is the intended future action
+				playpause.set_icon("media-playback-pause-symbolic", 24); // Change icon to pause since that is the intended future action (have icon size be slightly larger, looks off otherwise)
 			} else if ((state == Gst.State.PAUSED) || (state == Gst.State.NULL)) { // If we're currently paused, stopped, or ready to play
-				playpause.set_icon("media-playback-start-symbolic"); // Change icon to start / play since that is the intended future action
+				playpause.set_icon("media-playback-start-symbolic", null); // Change icon to start / play since that is the intended future action
 			}
 		}
 
@@ -191,7 +193,6 @@ namespace Koto {
 			if (current_state == Gst.State.PLAYING) { // If we're currently playing
 				Koto.playback.pause(); // Set to pause
 			} else { // If we're currently paused
-				stdout.printf("We are currently paused.\n");
 				Koto.playback.play(); // Set to playing
 			}
 		}

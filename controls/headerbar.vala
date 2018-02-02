@@ -11,8 +11,10 @@ namespace Koto {
 			show_close_button = true;
 
 			// Create HeaderBar Objects
-			menu_button = new FlatIconButton("audio-headphones-symbolic", Gtk.IconSize.MENU); // Create our Menu button. Temporarily use audio-headphones-symbolic as the logo
-			toggle_view_button = new FlatIconButton("view-list-symbolic", Gtk.IconSize.MENU); // Create our toggle-view button
+			menu_button = new FlatIconButton("audio-headphones-symbolic", 16); // Create our Menu button. Temporarily use audio-headphones-symbolic as the logo
+			menu_button.margin_left = 10;
+
+			toggle_view_button = new FlatIconButton("view-list-symbolic", 16); // Create our toggle-view button
 			toggle_view_button.tooltip_text = _("List View");
 			pack_start(menu_button);
 			pack_end(toggle_view_button);
@@ -25,7 +27,7 @@ namespace Koto {
 
 			toggle_view_button.clicked.connect(() => { // On Toggle View click
 				app.toggle_library_view(); // Toggle our current view
-				toggle_view_button.set_icon("view-" + app.current_library_view + "-symbolic"); // Update the symbolic
+				toggle_view_button.set_icon("view-" + app.current_library_view + "-symbolic", null); // Update the symbolic (with no change in size)
 				toggle_view_button.tooltip_text = (app.current_library_view == "list") ? _("List View") : _("Grid View");
 			});
 		}
