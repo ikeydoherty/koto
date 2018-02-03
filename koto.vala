@@ -111,7 +111,7 @@ namespace Koto {
 			global_views = new Gtk.Stack();
 
 			// Library Container and Views
-			var library_view = new LibraryView(); // Construct our Library View
+			library_view = new LibraryView(); // Construct our Library View
 
 			// Devices View
 			var devices_view = new KotoDevicesView();
