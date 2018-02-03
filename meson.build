@@ -16,6 +16,7 @@ taglib_dep = dependency('taglib_c', version: '>=1.11.0')
 add_project_arguments(['--vapidir', join_paths(meson.current_source_dir(), 'vapi')], language: 'vala')
 
 cdata = configuration_data()
+
 cdata.set_quoted('GETTEXT_PACKAGE', 'koto')
 add_global_arguments('-DGETTEXT_PACKAGE="koto"', language: 'c')
 
@@ -41,8 +42,7 @@ files = files(
 	'playback/playlist.vala',
 	'views/devices.vala',
 	'views/getting_started.vala',
-	'views/library_grid.vala',
-	'views/library_list.vala',
+	'views/library_tracks.vala',
 	'koto.vala',
 )
 

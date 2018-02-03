@@ -42,8 +42,7 @@ namespace Koto {
 		public string current_library_view;
 
 		public KotoGettingStartedView getting_started;
-		public KotoLibraryGridView grid_view;
-		public KotoLibraryListView list_view;
+		public KotoLibraryTracksView list_view;
 
 		public KotoApp(Gtk.Application gapp) {
 			Object(
@@ -120,10 +119,8 @@ namespace Koto {
 
 			// Library Container and Views
 			var library_view_container = new Gtk.Box(Gtk.Orientation.VERTICAL, 0);
-			list_view = new KotoLibraryListView(); // Construct our Library List View
-			grid_view = new KotoLibraryGridView(); // Construct our Library Grid View
+			list_view = new KotoLibraryTracksView(); // Construct our Library View
 			library_views.add_named(list_view, "list"); // Add List
-			library_views.add_named(grid_view, "grid"); // Add Grid
 			library_view_container.add(library_views); // Add the library stack to the container
 
 			// Stacks Setting and Global Push
@@ -134,14 +131,6 @@ namespace Koto {
 
 			global_views.add_named(library_view_container, "library"); // Have Library sit above Devices
 			global_views.add_named(devices_view, "devices");
-		}
-
-		// Toggle Library View is responsible for toggling our current library view
-		public void toggle_library_view() {
-			if (current_view == "library") { // If our current global view is library
-				current_library_view = (current_library_view == "list") ? "grid" : "list"; // Change List to Grid and vise-versa
-				library_views.set_visible_child_name(current_library_view);
-			}
 		}
 
 		// method_destroy will handle our destroy method
