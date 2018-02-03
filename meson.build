@@ -35,6 +35,7 @@ files = files(
 	'data/db.vala',
 	'data/metadata.vala',
 	'playback/engine.vala',
+	'playback/keyboard.vala',
 	'playback/notification.vala',
 	'playback/playlist.vala',
 	'views/devices.vala',

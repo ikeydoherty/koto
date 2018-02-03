@@ -168,5 +168,14 @@ namespace Koto {
 			Gst.Pad audio_pad = audio.get_static_pad("sink");
 			audio_pad.offset = 0; // Reset offset
 		}
+
+		// toggle will toggle the playback
+		public void toggle() {
+			if (Koto.playback.is_playing) { // If we're playing, pause. If we're paused, play.
+				Koto.playback.pause();
+			} else {
+				Koto.playback.play(); 
+			}
+		}
 	} 
 }

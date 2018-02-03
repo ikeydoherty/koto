@@ -1,11 +1,33 @@
 namespace Koto {
 	public KotoApp app;
 	public KotoDatabase kotodb;
+	public MediaKeyHandler mediakeys;
 	public Gtk.IconTheme icontheme;
 	public PlaybackEngine playback;
 	public string music_dir; // User Music Directory
 
-	public class KotoApp : Gtk.Window {
+	public class KotoAppMain : Gtk.Application {
+		public KotoAppMain() {
+			Object(application_id: "com.joshstrobl.koto", flags: ApplicationFlags.FLAGS_NONE);
+		}
+
+		protected override void activate() {
+			app = new KotoApp(this);
+		}
+
+		public static int main(string[] args) {
+			if (!Thread.supported()) {
+				error("Cannot run without Vala threading support.");
+			}
+
+			Gst.init(ref args);
+
+			KotoAppMain kotomain = new KotoAppMain();
+			return kotomain.run(args);
+		}
+	}
+
+	public class KotoApp : Gtk.ApplicationWindow {
 		public KotoHeaderBar header;
 		public KotoMenuPopover menu_popover;
 		public PlayerBar playerbar;
@@ -22,37 +44,20 @@ namespace Koto {
 		public KotoLibraryGridView grid_view;
 		public KotoLibraryListView list_view;
 
-		public static int main (string[] args) {
-			if (!Thread.supported()) {
-				error("Cannot run without Vala threading support.");
-			}
-
-			Gtk.init(ref args);
-
-			app = new KotoApp(args);
-			Gtk.main();
-			return 0;
-		}
-
-		public KotoApp(string[] args) {
+		public KotoApp(Gtk.Application gapp) {
 			Object(
+				application: gapp,
 				icon_name: "audio-headphones", // Use audio-headphones for now
-				startup_id: "koto",
+				startup_id: "com.joshstrobl.koto",
 				title: "Koto",
 				type: Gtk.WindowType.TOPLEVEL,
 				window_position: Gtk.WindowPosition.CENTER
 			);
 
-			try {
-				bool success = Gst.init_check(ref args);
-				if (success) {
-					playback = new Koto.PlaybackEngine();
-				} else {
-					stdout.printf("Unable to initialize gstreamer.\n");
-				}
-			} catch (Error e) {
-				stdout.printf("Failed to initialize gstreamer: %s\n", e.message);
-			}
+			set_wmclass("Koto","com.joshstrobl.koto");
+
+			playback = new Koto.PlaybackEngine();
+			mediakeys = new Koto.MediaKeyHandler();
 
 			Notify.init("Koto"); // Initialize Notify
 			icontheme = new Gtk.IconTheme(); // Create a new IconTheme to load icons
@@ -141,7 +146,6 @@ namespace Koto {
 		void method_destroy() {
 			Koto.playback.stop(); // Set the state to null so it stops buffering any existing tracks and allows deinit
 			Gst.deinit(); // Ensure we de-initialize Gst
-			Gtk.main_quit();
 		}
 	}
 }
