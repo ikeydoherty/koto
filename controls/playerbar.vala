@@ -26,8 +26,8 @@ namespace Koto {
 			get_style_context().add_class("titlebar");
 
 			// Create all our controls
-			backward = new FlatIconButton("media-skip-backward-symbolic", 22);
-			forward = new FlatIconButton("media-skip-forward-symbolic", 22);
+			backward = new FlatIconButton("media-skip-backward-symbolic", 18);
+			forward = new FlatIconButton("media-skip-forward-symbolic", 18);
 
 			playpause = new FlatIconButton("media-playback-start-symbolic", 22); // Default to Play button
 			playpause.width_request = 26; // Set to a width larger than our default, since our pause button is set to 24 instead of 22 and we don't want it shifting around
@@ -37,9 +37,9 @@ namespace Koto {
 			progressbar.set_digits(0); // Default to 0
 			progressbar.set_increments(1,1);
 
-			repeat = new FlatIconButton("media-playlist-repeat-symbolic", 22);
-			shuffle = new FlatIconButton("media-playlist-shuffle-symbolic", 22);
-			playlist = new FlatIconButton("emblem-favorite-symbolic", 22);
+			repeat = new FlatIconButton("media-playlist-repeat-symbolic", 18);
+			shuffle = new FlatIconButton("media-playlist-shuffle-symbolic", 18);
+			playlist = new FlatIconButton("emblem-favorite-symbolic", 18);
 			volume = new Gtk.VolumeButton();
 			volume.use_symbolic = true; // Ensure we use the symbolic icon
 
