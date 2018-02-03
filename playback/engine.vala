@@ -62,7 +62,6 @@ namespace Koto {
 						requesting_play = false; // No longer requesting play
 						Timeout.add(50, update_progress, Priority.HIGH); // Create a new timeout that triggers every 50ms to update progress at high priority
 					} else if (((old_state == Gst.State.PLAYING) || (old_state == Gst.State.PAUSED)) && (new_state == Gst.State.NULL)) { // If we're freeing resources
-						Koto.app.playerbar.reset_progressbar(); // Reset our progressbar
 						player_monitor.post(new Gst.Message.reset_time(playbin, 0));
 					}
 

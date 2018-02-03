@@ -10,9 +10,7 @@ namespace Koto{
 			Object();
 			_size = size;
 
-			get_style_context().add_class("button");
 			get_style_context().add_class("flat");
-			get_style_context().add_class("image-button");
 			get_style_context().save();
 
 			set_icon(icon_string, null);
