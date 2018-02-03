@@ -15,9 +15,23 @@ taglib_dep = dependency('taglib_c', version: '>=1.11.0')
 
 add_project_arguments(['--vapidir', join_paths(meson.current_source_dir(), 'vapi')], language: 'vala')
 
+path_prefix = get_option('prefix')
+path_datadir = join_paths(path_prefix, get_option('datadir'), meson.project_name())
+
 cdata = configuration_data()
 
 cdata.set_quoted('GETTEXT_PACKAGE', 'koto')
+
+# Namespaced with KOTO to match vapi Koto namespace
+cdata.set_quoted('KOTO_DATADIR', path_datadir)
+cdata.set_quoted('KOTO_VERSION', meson.project_version())
+
+# Write config.h now
+config_h = configure_file(
+        configuration: cdata,
+        output: 'config.h',
+)
+
 add_global_arguments('-DGETTEXT_PACKAGE="koto"', language: 'c')
 
 files = files(
@@ -62,5 +76,12 @@ executable(
 		sqlite_dep,
 		taglib_dep
 	],
+        vala_args: [
+                '--vapidir', meson.current_source_dir(),
+                '--pkg', 'config',
+        ],
+        include_directories: [
+                include_directories('.'),
+        ],
 	link_args: '-lm'
 )
