@@ -2,7 +2,6 @@ namespace Koto {
 	// KotoHeaderBar is our custom HeaderBar control
 	public class KotoHeaderBar : Gtk.HeaderBar {
 		private FlatIconButton menu_button;
-		public FlatIconButton toggle_view_button;
 
 		public KotoHeaderBar() {
 			// Set HeaderBar attributes

@@ -29,11 +29,9 @@ namespace Koto {
 			if (name == "library") { // Library View
 				app.current_view = "library";
 				app.global_views.set_visible_child_name("library");
-				app.header.toggle_view_button.sensitive = true;
 			} else if (name == "devices") { // Devices View
 				app.global_views.set_visible_child_name("devices");
 				app.current_view = "devices";
-				app.header.toggle_view_button.sensitive = false;
 			}
 		}
 	}
