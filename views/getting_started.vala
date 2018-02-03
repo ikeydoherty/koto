@@ -80,7 +80,7 @@ namespace Koto {
 				progress.queue_draw();
 
 				Koto.kotodb.load_data(); // Load our new data in
-				Koto.app.list_view.refresh(); // Refresh our list view
+				Koto.app.library_view.refresh(); // Refresh our list view
 				Koto.app.getting_started.hide();
 				Koto.app.main_container.show_all();
 				Koto.app.playerbar.show_all();

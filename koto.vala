@@ -36,13 +36,11 @@ namespace Koto {
 		public Gtk.Box global_container;
 		public Gtk.Box main_container;
 		public Gtk.Stack global_views;
-		public Gtk.Stack library_views;
 
 		public string current_view;
-		public string current_library_view;
 
 		public KotoGettingStartedView getting_started;
-		public LibraryView list_view;
+		public LibraryView library_view;
 
 		public KotoApp(Gtk.Application gapp) {
 			Object(
@@ -70,7 +68,6 @@ namespace Koto {
 			set_default_size(1000,600); // Set a default of 1000px width by 600 height
 			title = "Koto";
 			current_view = "library"; // Default to library global view
-			current_library_view = "list"; // Default to list view until we implement preferences
 
 			header = new KotoHeaderBar(); // Create our Headerbar
 			menu_popover = new KotoMenuPopover(); // Create our Menu Popover
@@ -112,24 +109,18 @@ namespace Koto {
 		public void create_views() {
 			// Create our primary views
 			global_views = new Gtk.Stack();
-			library_views =  new Gtk.Stack();
+
+			// Library Container and Views
+			var library_view = new LibraryView(); // Construct our Library View
 
 			// Devices View
 			var devices_view = new KotoDevicesView();
 
-			// Library Container and Views
-			var library_view_container = new Gtk.Box(Gtk.Orientation.VERTICAL, 0);
-			list_view = new LibraryView(); // Construct our Library View
-			library_views.add_named(list_view, "list"); // Add List
-			library_view_container.add(library_views); // Add the library stack to the container
-
 			// Stacks Setting and Global Push
 			global_views.set_transition_duration(250); // 250ms
-			library_views.set_transition_duration(250); // 250ms
 			global_views.set_transition_type(Gtk.StackTransitionType.SLIDE_UP_DOWN); // Slide Up or Down based on current global view
-			library_views.set_transition_type(Gtk.StackTransitionType.SLIDE_LEFT_RIGHT); // Slide Left or Right based on current library view
 
-			global_views.add_named(library_view_container, "library"); // Have Library sit above Devices
+			global_views.add_named(library_view, "library"); // Have Library sit above Devices
 			global_views.add_named(devices_view, "devices");
 		}
 
