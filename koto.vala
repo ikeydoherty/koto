@@ -54,6 +54,9 @@ namespace Koto {
 
 			set_wmclass("Koto","com.joshstrobl.koto");
 
+                        // Fallback CSS
+                        setup_css("/com/joshstrobl/koto/style.css");
+
 			utils = new Koto.Utils();
 			playback = new Koto.PlaybackEngine();
 			mediakeys = new Koto.MediaKeyHandler();
@@ -104,6 +107,14 @@ namespace Koto {
 				show_all();
 			}
 		}
+
+                // setup_css attaches our stylesheet to the global context
+                private void setup_css(string stylesheet, uint priority = Gtk.STYLE_PROVIDER_PRIORITY_FALLBACK) {
+                        var provider = new Gtk.CssProvider();
+                        provider.load_from_resource(stylesheet);
+                        var screen = Gdk.Screen.get_default();
+                        Gtk.StyleContext.add_provider_for_screen(screen, provider, priority);
+                }
 
 		// create_views is responsible for the creation of our Gtk.Stack
 		public void create_views() {

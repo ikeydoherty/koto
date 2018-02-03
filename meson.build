@@ -1,4 +1,5 @@
 project('koto', 'vala', 'c')
+gnome = import('gnome')
 
 # Dependencies
 gee_dep = dependency('gee-0.8', version: '>=0.20.0')
@@ -34,6 +35,14 @@ config_h = configure_file(
 
 add_global_arguments('-DGETTEXT_PACKAGE="koto"', language: 'c')
 
+# Generate the dependencies/sources for koto binary
+koto_resources = gnome.compile_resources(
+        'koto-resources',
+        'data/css/css.gresource.xml',
+        source_dir: join_paths(meson.current_source_dir(), 'data', 'css'),
+        c_name: 'koto_css',
+)
+
 files = files(
 	'controls/album_item.vala',
 	'controls/flat_icon_button.vala',
@@ -62,7 +71,10 @@ files = files(
 
 executable(
 	'koto',
-	files,
+	sources: [
+                files,
+                koto_resources,
+        ],
 	dependencies: [
 		gee_dep,
 		gdk_dep,
