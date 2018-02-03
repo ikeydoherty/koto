@@ -42,7 +42,7 @@ namespace Koto {
 		public string current_library_view;
 
 		public KotoGettingStartedView getting_started;
-		public KotoLibraryTracksView list_view;
+		public LibraryView list_view;
 
 		public KotoApp(Gtk.Application gapp) {
 			Object(
@@ -119,7 +119,7 @@ namespace Koto {
 
 			// Library Container and Views
 			var library_view_container = new Gtk.Box(Gtk.Orientation.VERTICAL, 0);
-			list_view = new KotoLibraryTracksView(); // Construct our Library View
+			list_view = new LibraryView(); // Construct our Library View
 			library_views.add_named(list_view, "list"); // Add List
 			library_view_container.add(library_views); // Add the library stack to the container
 

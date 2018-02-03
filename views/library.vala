@@ -1,11 +1,11 @@
 // This contains the code for our Library List view
 
 namespace Koto {
-	public class KotoLibraryTracksView : Gtk.Box {
+	public class LibraryView : Gtk.Box {
 		KotoList artist_list;
 		Gtk.Box album_list;
 
-		public KotoLibraryTracksView() {
+		public LibraryView() {
 			Object(orientation: Gtk.Orientation.HORIZONTAL, spacing: 0);
 			vexpand = true;
 

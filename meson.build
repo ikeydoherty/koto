@@ -42,7 +42,7 @@ files = files(
 	'playback/playlist.vala',
 	'views/devices.vala',
 	'views/getting_started.vala',
-	'views/library_tracks.vala',
+	'views/library.vala',
 	'koto.vala',
 )
 
