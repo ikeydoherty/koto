@@ -8,7 +8,12 @@ namespace Koto {
 		public dynamic Gst.Element playbin;
 		public Gst.Bus player_monitor;
 
-		private double current_position;
+		public double current_duration;
+		public double current_position;
+
+		public string current_duration_s;
+		public string current_position_s;
+
 		private bool is_playing;
 		private bool requesting_play;
 		
@@ -53,8 +58,6 @@ namespace Koto {
 
 					if ((old_state == Gst.State.NULL) && (new_state == Gst.State.READY)) { // If we're ready to play
 						update_duration(); // Update our duration info
-
-
 					} else if (((old_state == Gst.State.NULL) || (old_state == Gst.State.PAUSED)) && (new_state == Gst.State.PLAYING)) { // If we're starting playback
 						requesting_play = false; // No longer requesting play
 						Timeout.add(50, update_progress, Priority.HIGH); // Create a new timeout that triggers every 50ms to update progress at high priority
@@ -86,14 +89,15 @@ namespace Koto {
 
 		// update_duration will attempt to fetch and update our duration info
 		private void update_duration() {
-			int64 current_duration = 0;
+			int64 duration = 0;
 
-			if (playbin.query_duration(Gst.Format.TIME, out current_duration)) { // If we successfully fetched duration
-				double track_duration = (current_duration / NS); // Get the total number of seconds for the track, which is the duration (in nanoseconds) divided by 1 billion
+			if (playbin.query_duration(Gst.Format.TIME, out duration)) { // If we successfully fetched duration
+				current_duration = (duration / NS); // Get the total number of seconds for the track, which is the duration (in nanoseconds) divided by 1 billion
+				current_duration_s = Koto.utils.format_seconds(current_duration, "");
 
-				if (track_duration > 0) { // If we have valid times
+				if (current_duration > 0) { // If we have valid times
 					Koto.app.playerbar.reset_progressbar(); // Reset our progressbar
-					Koto.app.playerbar.progressbar.set_range(0, track_duration); // Set the new range from 0 to the duration of the track
+					Koto.app.playerbar.progressbar.set_range(0, current_duration); // Set the new range from 0 to the duration of the track
 				}
 			}
 		}
@@ -108,10 +112,13 @@ namespace Koto {
 
 					if (new_position != current_position) { // If the new position is different from the old
 						current_position = new_position;
+						current_position_s = Koto.utils.format_seconds(current_position, current_duration_s);
+
 						position_changed(new_position);
 					}
 				} else {
 					current_position = 0;
+					current_position_s = Koto.utils.format_seconds(current_position, current_duration_s);
 					position_changed(0);
 				}
 

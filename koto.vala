@@ -1,6 +1,7 @@
 namespace Koto {
 	public KotoApp app;
 	public KotoDatabase kotodb;
+	public Koto.Utils utils;
 	public MediaKeyHandler mediakeys;
 	public Gtk.IconTheme icontheme;
 	public PlaybackEngine playback;
@@ -56,6 +57,7 @@ namespace Koto {
 
 			set_wmclass("Koto","com.joshstrobl.koto");
 
+			utils = new Koto.Utils();
 			playback = new Koto.PlaybackEngine();
 			mediakeys = new Koto.MediaKeyHandler();
 

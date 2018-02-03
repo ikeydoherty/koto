@@ -13,6 +13,7 @@ namespace Koto {
 		public Gtk.Scale progressbar;
 
 		// Right Side Controls
+		public Gtk.Label time_label;
 		public FlatIconButton repeat;
 		public FlatIconButton shuffle;
 		public FlatIconButton playlist;
@@ -37,6 +38,13 @@ namespace Koto {
 			progressbar.set_digits(0); // Default to 0
 			progressbar.set_increments(1,1);
 
+			time_label = new Gtk.Label("");
+			time_label.get_style_context().add_class("dim-label"); // Have it be dim
+			time_label.justify = Gtk.Justification.CENTER; // Center the text
+			time_label.single_line_mode = true;
+			time_label.wrap = false;
+			time_label.visible = false;
+
 			repeat = new FlatIconButton("media-playlist-repeat-symbolic", 18);
 			shuffle = new FlatIconButton("media-playlist-shuffle-symbolic", 18);
 			playlist = new FlatIconButton("emblem-favorite-symbolic", 18);
@@ -60,9 +68,9 @@ namespace Koto {
 			var right_controls = new Gtk.Box(Gtk.Orientation.HORIZONTAL, 10); // Create our Right Controls section
 			right_controls.margin_top = 10;
 			right_controls.margin_bottom = 10;
-			right_controls.margin_left = 15;
 			right_controls.margin_right = 15;
 
+			right_controls.pack_start(time_label, false, false, 0); // Add time label to Right controls
 			right_controls.pack_start(repeat, false, false, 0); // Add repeat button to Right controls
 			right_controls.pack_start(shuffle, false, false, 0); // Add shuffle button to Right controls
 			right_controls.pack_start(playlist, false, false, 0); // Add playlist button to Right controls
@@ -172,7 +180,14 @@ namespace Koto {
 		// on_player_position_updated is responsible for updating the current track position
 		public void on_player_position_updated(double pos) {
 			if (!_user_seeking) { // If we're allowed to update the progress bar and we're playing content
+				if (!time_label.visible) { // Check if the time label isn't already visible when we've received our position info
+					time_label.margin_left = 10; // Set our margins here since we'll be showing the label
+					time_label.margin_right = 10; // Set our margins here since we'll be showing the label
+					time_label.show_all(); // Show label
+				}
+
 				progressbar.set_value(pos); // Set the current position
+				time_label.set_text("%s / %s".printf(Koto.playback.current_position_s, Koto.playback.current_duration_s)); // Update the string
 			}
 		}
 
